@@ -39,7 +39,7 @@
 html,body{height:100%}
 body{font-family:var(--font);font-size:13px;background:var(--bg3);color:var(--text);line-height:1.5}
 
-.shell{display:grid;grid-template-columns:210px 1fr;height:100vh;overflow:hidden}
+.shell{display:grid;grid-template-columns:210px 1fr;height:100vh;overflow:hidden;position:relative}
 
 /* SIDEBAR */
 .sidebar{background:var(--bg2);border-right:0.5px solid var(--border2);display:flex;flex-direction:column;overflow:hidden}
@@ -72,7 +72,7 @@ body{font-family:var(--font);font-size:13px;background:var(--bg3);color:var(--te
 .b-ok{background:var(--green-bg);color:var(--green-text)}
 .b-info{background:var(--blue-bg);color:var(--blue-text)}
 
-.content{padding:20px 24px;overflow-y:auto;flex:1}
+.content{padding:20px 24px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
 .section{display:none}
 .section.active{display:block}
 
@@ -169,7 +169,7 @@ tbody tr:hover td{background:var(--bg2)}
 .sd-amber{background:var(--warn)}.sd-green{background:var(--accent)}.sd-red{background:var(--danger)}
 
 /* PHOTO GRID */
-.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 .photo-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden}
 .photo-placeholder{height:110px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border-bottom:0.5px solid var(--border)}
 .photo-placeholder i{font-size:28px;color:var(--text3);opacity:.5}
@@ -191,6 +191,129 @@ tbody tr:hover td{background:var(--bg2)}
 #lb-prev { left:16px; }
 #lb-next { right:16px; }
 
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — TABLET (≤768px)
+═══════════════════════════════════════════ */
+@media (max-width:768px){
+  .shell{grid-template-columns:1fr;height:100vh}
+
+  /* Sidebar: overlay drawer */
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;
+    width:240px;z-index:1000;
+    transform:translateX(-100%);
+    transition:transform .25s cubic-bezier(.4,0,.2,1);
+    box-shadow:4px 0 24px rgba(0,0,0,.18);
+  }
+  .sidebar.open{transform:translateX(0)}
+
+  /* Overlay backdrop */
+  .sidebar-backdrop{
+    display:none;position:fixed;inset:0;
+    background:rgba(0,0,0,.45);z-index:999;
+  }
+  .sidebar-backdrop.visible{display:block}
+
+  /* Main fills full width */
+  .main{grid-column:1;overflow:hidden;display:flex;flex-direction:column;height:100vh}
+
+  /* Topbar: hamburger + compact badges */
+  .topbar{padding:10px 14px;gap:8px}
+  .topbar-title{font-size:13px}
+  .topbar-badges{display:none}  /* hide badges on mobile — show in hamburger menu */
+  .hamburger{
+    display:flex;align-items:center;justify-content:center;
+    width:34px;height:34px;border:none;background:var(--bg2);
+    border-radius:var(--r);cursor:pointer;flex-shrink:0;
+    border:0.5px solid var(--border);
+  }
+  .hamburger i{font-size:18px;color:var(--text2)}
+
+  /* Content */
+  .content{padding:12px 14px}
+
+  /* KPI: 2 columns */
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .kpi-value{font-size:20px}
+  .kpi-sub{font-size:10px}
+
+  /* Two-col: stack */
+  .two-col{grid-template-columns:1fr}
+
+  /* Cards */
+  .card{padding:12px 14px}
+  .card-title{margin-bottom:10px}
+
+  /* Tables: horizontal scroll */
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:480px}
+  th,td{padding:6px 8px;font-size:11px}
+  th{font-size:10px}
+
+  /* Phase bars */
+  .ph-name{min-width:100px;font-size:11px}
+  .ph-count{display:none}
+
+  /* Persons */
+  .person-row{gap:8px}
+  .av{width:28px;height:28px;font-size:10px}
+  .p-name{font-size:11px}
+  .p-role{font-size:10px}
+
+  /* IRN list */
+  .irn-id{min-width:100px}
+  .irn-row{font-size:11px}
+
+  /* Photo grid: 2 cols */
+  .photo-grid{grid-template-columns:repeat(2,1fr)}
+
+  /* Alerts */
+  .alert{font-size:12px;padding:8px 10px}
+
+  /* Pills */
+  .pill{font-size:10px;padding:2px 6px}
+
+  /* Activities */
+  .act-date{min-width:70px;font-size:10px}
+  .act-itp{min-width:28px}
+  .act-note{display:none}
+
+  /* Check rows */
+  .check-row{font-size:12px}
+
+  /* Lightbox */
+  .lightbox img{max-width:96vw;max-height:75vh}
+  .lightbox-nav{padding:8px 12px;font-size:18px}
+  #lb-prev{left:6px}
+  #lb-next{right:6px}
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — MOBILE (≤480px)
+═══════════════════════════════════════════ */
+@media (max-width:480px){
+  .content{padding:10px 12px}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:6px}
+  .kpi{padding:10px 10px}
+  .kpi-value{font-size:18px}
+  .kpi-label{font-size:10px}
+  .card{padding:10px 12px;margin-bottom:10px}
+  .photo-grid{grid-template-columns:repeat(2,1fr);gap:6px}
+  .photo-img{height:100px}
+  table{min-width:420px}
+  th,td{padding:5px 7px;font-size:11px}
+  .ph-row{gap:6px}
+  .ph-name{min-width:90px;font-size:11px}
+  .ph-pct{min-width:32px;font-size:11px}
+  .irn-id{min-width:90px;font-size:10px}
+  .act-date{font-size:10px;min-width:65px}
+  .topbar{padding:8px 12px}
+  .topbar-title{font-size:12px}
+  .hamburger{width:30px;height:30px}
+  .hamburger i{font-size:16px}
+}
+
 /* PRINT */
 @media print{
   .shell{display:block;height:auto}
@@ -207,7 +330,8 @@ tbody tr:hover td{background:var(--bg2)}
 <div class="shell">
 
 <!-- SIDEBAR -->
-<aside class="sidebar">
+<div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+<aside class="sidebar" id="sidebar">
   <div class="sb-logo">
     <div class="sb-logo-tag">NFPS COMP3B</div>
     <div class="sb-logo-title">EEW Weekly Report</div>
@@ -242,6 +366,9 @@ tbody tr:hover td{background:var(--bg2)}
 <!-- MAIN -->
 <div class="main">
   <div class="topbar">
+    <button class="hamburger" id="hamburger-btn" aria-label="Open navigation" style="display:none">
+      <i class="ti ti-menu-2" aria-hidden="true"></i>
+    </button>
     <span class="topbar-title" id="topbar-title">Overview</span>
     <div class="topbar-badges">
       <span class="badge b-warn"><i class="ti ti-alert-triangle" style="font-size:10px;vertical-align:-1px;margin-right:3px" aria-hidden="true"></i>Production slowed</span>
@@ -821,7 +948,36 @@ function nav(id,btn){
   btn.classList.add('active');
   document.getElementById('topbar-title').textContent=titles[id]||id;
   document.querySelector('.content').scrollTop=0;
+  // Close drawer on mobile after selection
+  closeSidebar();
 }
+
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebar-backdrop').classList.add('visible');
+  document.body.style.overflow='hidden';
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-backdrop').classList.remove('visible');
+  document.body.style.overflow='';
+}
+
+// Hamburger + backdrop
+document.addEventListener('DOMContentLoaded',function(){
+  const hb=document.getElementById('hamburger-btn');
+  const bd=document.getElementById('sidebar-backdrop');
+  if(hb){
+    hb.addEventListener('click',openSidebar);
+    // Show hamburger only on mobile
+    function checkMobile(){
+      hb.style.display=window.innerWidth<=768?'flex':'none';
+    }
+    checkMobile();
+    window.addEventListener('resize',checkMobile);
+  }
+  if(bd) bd.addEventListener('click',closeSidebar);
+});
 
 const phases=[
   {name:'Milling',done:2675,total:4440},{name:'Welding base',done:2670,total:4440},
