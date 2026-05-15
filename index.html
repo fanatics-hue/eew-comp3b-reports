@@ -1,601 +1,1342 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>COMP3B Project Dashboard — Status Report 17.05.2026</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IR-075 Dashboard – EEW COMP3B</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/tabler-icons.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-:root{
-  --accent:#1D9E75;--accent2:#378ADD;--warn:#EF9F27;--danger:#E24B4A;
-  --bg:#ffffff;--bg2:#f5f5f3;--bg3:#eeede8;
-  --text:#1a1a18;--text2:#5f5e5a;--text3:#888780;
-  --border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.17);
-  --r:8px;--rl:12px;
-  --font:-apple-system,'Segoe UI',system-ui,sans-serif;
-  --mono:'SF Mono','Consolas','Liberation Mono',monospace;
-  --green-bg:#EAF3DE;--green-text:#27500A;
-  --amber-bg:#FAEEDA;--amber-text:#633806;
-  --red-bg:#FCEBEB;--red-text:#A32D2D;
-  --blue-bg:#E6F1FB;--blue-text:#0C447C;
-  --teal-bg:#9FE1CB;--teal-text:#085041;
-  --purple-bg:#CECBF6;--purple-text:#3C3489;
-  --sidebar-w:210px;
-}
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #1e40af;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --secondary: #8b5cf6;
+            --gray-900: #111827;
+            --gray-800: #1f2937;
+            --gray-700: #374151;
+            --gray-600: #4b5563;
+            --gray-500: #6b7280;
+            --gray-400: #9ca3af;
+            --gray-300: #d1d5db;
+            --gray-200: #e5e7eb;
+            --gray-100: #f3f4f6;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border-color: #334155;
+        }
 
-@media (prefers-color-scheme:dark){
-  :root{
-    --bg:#1c1c1a;--bg2:#252523;--bg3:#2e2e2b;
-    --text:#f0efe8;--text2:#b4b2a9;--text3:#888780;
-    --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.17);
-    --green-bg:#173404;--green-text:#C0DD97;
-    --amber-bg:#412402;--amber-text:#FAC775;
-    --red-bg:#501313;--red-text:#F7C1C1;
-    --blue-bg:#042C53;--blue-text:#B5D4F4;
-    --teal-bg:#04342C;--teal-text:#9FE1CB;
-    --purple-bg:#26215C;--purple-text:#CECBF6;
-  }
-}
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
 
-html,body{height:100%}
-body{font-family:var(--font);font-size:13px;background:var(--bg3);color:var(--text);line-height:1.5}
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 210px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, #0f172a 100%);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+        }
 
-/* ── SIDEBAR ── */
-.sidebar{
-  position:fixed;top:0;left:0;bottom:0;
-  width:var(--sidebar-w);
-  background:var(--bg2);
-  border-right:0.5px solid var(--border2);
-  display:flex;flex-direction:column;
-  overflow:hidden;
-  z-index:100;
-  transition:transform .28s cubic-bezier(.4,0,.2,1);
-}
-.sidebar.open{transform:translateX(0)}
-.sidebar-backdrop{
-  display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,.5);z-index:99;
-  backdrop-filter:blur(2px);
-}
-.sidebar-backdrop.visible{display:block}
+        .sidebar-header {
+            margin-bottom: 32px;
+        }
 
-/* ── SHELL ── */
-.shell{
-  margin-left:var(--sidebar-w);
-  height:100vh;
-  display:flex;flex-direction:column;
-}
-.content{padding:20px 24px;overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
+        .sb-logo {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gray-400);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 8px;
+        }
 
-/* ── SIDEBAR INTERNALS ── */
-.sb-logo{padding:18px 16px 14px;border-bottom:0.5px solid var(--border)}
-.sb-logo-tag{font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
-.sb-logo-title{font-size:14px;font-weight:500;color:var(--text);line-height:1.25}
-.sb-logo-sub{font-size:11px;color:var(--text3);margin-top:2px}
-.sb-week{margin:10px 12px;background:var(--bg3);border-radius:var(--r);padding:9px 11px;border:0.5px solid var(--border)}
-.sb-week-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
-.sb-week-val{font-size:12px;font-weight:500;color:var(--text);margin-top:1px}
-.sb-nav{flex:1;padding:8px 0;overflow-y:auto}
-.sb-section{font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;padding:12px 16px 4px}
-.sb-btn{display:flex;align-items:center;gap:8px;width:100%;padding:7px 16px;border:none;background:transparent;font-family:var(--font);font-size:12px;color:var(--text2);cursor:pointer;transition:all .14s;text-align:left;border-left:2px solid transparent}
-.sb-btn i{font-size:15px;flex-shrink:0;opacity:.65;transition:opacity .14s}
-.sb-btn:hover{background:var(--bg);color:var(--text)}
-.sb-btn:hover i{opacity:.9}
-.sb-btn.active{background:var(--bg);color:var(--text);border-left-color:var(--accent);font-weight:500}
-.sb-btn.active i{opacity:1;color:var(--accent)}
-.sb-footer{padding:14px 16px;border-top:0.5px solid var(--border)}
-.sb-ir{font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
-.sb-irn{font-size:12px;color:var(--text2);margin-top:2px;font-family:var(--mono)}
+        .sb-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
 
-/* ── TOPBAR ── */
-.topbar{padding:11px 24px;background:var(--bg);border-bottom:0.5px solid var(--border2);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px}
-.topbar-title{font-size:14px;font-weight:500;color:var(--text)}
-.topbar-badges{display:flex;gap:6px;flex-wrap:wrap}
-.badge{font-size:10px;font-weight:500;padding:3px 9px;border-radius:100px;white-space:nowrap}
-.b-warn{background:var(--amber-bg);color:var(--amber-text)}
-.b-ok{background:var(--green-bg);color:var(--green-text)}
-.b-info{background:var(--blue-bg);color:var(--blue-text)}
-.b-danger{background:var(--red-bg);color:var(--red-text)}
-.hamburger{display:none;align-items:center;justify-content:center;width:34px;height:34px;border:none;background:var(--bg2);border-radius:var(--r);cursor:pointer;flex-shrink:0;border:0.5px solid var(--border)}
-.hamburger i{font-size:18px;color:var(--text2)}
+        .sb-week {
+            font-size: 12px;
+            color: var(--gray-400);
+        }
 
-/* ── CONTENT ── */
-.section{display:none}
-.section.active{display:block}
+        .sb-week-val {
+            color: var(--primary);
+            font-weight: 600;
+        }
 
-/* ── KPI GRID ── */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
-.kpi{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:12px 14px;position:relative;overflow:hidden}
-.kpi::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
-.kpi.g::before{background:var(--accent)}.kpi.b::before{background:var(--accent2)}.kpi.w::before{background:var(--warn)}.kpi.r::before{background:var(--danger)}
-.kpi-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;font-weight:500;margin-bottom:4px}
-.kpi-value{font-size:20px;font-weight:600;color:var(--text)}
-.kpi-subtitle{font-size:10px;color:var(--text3);margin-top:4px}
+        .sb-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
 
-/* ── CARDS & SECTIONS ── */
-.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}
-.card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.card-title i{font-size:16px;opacity:.7}
+        .sb-nav-group {
+            margin-bottom: 20px;
+        }
 
-.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+        .sb-nav-group-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--gray-500);
+            letter-spacing: 0.8px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+        }
 
-/* ── STATUS BARS ── */
-.status-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:8px 0;border-bottom:0.5px solid var(--border)}
-.status-row:last-child{border-bottom:none}
-.status-label{font-size:12px;color:var(--text2);min-width:120px}
-.status-bar-container{flex:1;height:20px;background:var(--bg3);border-radius:4px;overflow:hidden}
-.status-bar{height:100%;background:var(--accent);transition:width .3s}
-.status-percent{font-size:11px;font-weight:500;color:var(--text);min-width:40px;text-align:right}
+        .sb-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-decoration: none;
+            border: 1px solid transparent;
+        }
 
-/* ── TABLE ── */
-.table-wrapper{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:12px}
-table th{background:var(--bg3);padding:8px 10px;text-align:left;font-weight:500;color:var(--text2);border-bottom:0.5px solid var(--border2)}
-table td{padding:8px 10px;border-bottom:0.5px solid var(--border)}
-table tr:hover{background:var(--bg2)}
+        .sb-nav-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
 
-/* ── STATS GRID ── */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
-.stat-box{background:var(--bg3);border-radius:var(--r);padding:12px;text-align:center}
-.stat-value{font-size:18px;font-weight:600;color:var(--accent)}
-.stat-label{font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.03em}
+        .sb-nav-item.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--primary);
+            border-color: var(--primary);
+            font-weight: 500;
+        }
 
-/* ── ALERTS ── */
-.alert{background:var(--bg);border-left:3px solid var(--warn);border-radius:var(--r);padding:12px;margin-bottom:12px;display:flex;gap:10px}
-.alert.danger{border-left-color:var(--danger)}
-.alert.info{border-left-color:var(--accent2)}
-.alert-icon{font-size:18px;flex-shrink:0;opacity:.8}
-.alert-text{font-size:12px;color:var(--text2)}
+        .sb-nav-icon {
+            width: 16px;
+            height: 16px;
+        }
 
-/* ── RESPONSIVE ── */
-@media(max-width:1024px){
-  .kpi-grid{grid-template-columns:repeat(2,1fr)}
-  .grid-3{grid-template-columns:repeat(2,1fr)}
-}
-@media(max-width:768px){
-  :root{--sidebar-w:0}
-  .sidebar{transform:translateX(-100%);width:210px}
-  .shell{margin-left:0}
-  .hamburger{display:flex}
-  .topbar{padding:11px 16px}
-  .content{padding:16px}
-  .kpi-grid{grid-template-columns:1fr}
-  .grid-2,.grid-3{grid-template-columns:1fr}
-}
+        .sb-footer {
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            font-size: 10px;
+            color: var(--gray-500);
+        }
 
-</style>
+        .sb-irn {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .shell {
+            margin-left: 210px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .topbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            position: relative;
+            z-index: 500;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hamburger {
+            display: none;
+            width: 32px;
+            height: 32px;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .topbar-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .page-container {
+            padding: 32px;
+            max-width: 1600px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .page-header {
+            margin-bottom: 28px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 13px;
+            color: var(--gray-400);
+        }
+
+        .alerts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .alert-card {
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            display: flex;
+            gap: 12px;
+        }
+
+        .alert-card.critical {
+            border-left-color: var(--danger);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .alert-card.warning {
+            border-left-color: var(--warning);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .alert-card.success {
+            border-left-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .alert-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .alert-card.critical .alert-icon { color: var(--danger); }
+        .alert-card.warning .alert-icon { color: var(--warning); }
+        .alert-card.success .alert-icon { color: var(--success); }
+
+        .alert-content h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .alert-content p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .kpi-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+        }
+
+        .kpi-card.success::before { background: var(--success); }
+        .kpi-card.warning::before { background: var(--warning); }
+        .kpi-card.critical::before { background: var(--danger); }
+
+        .kpi-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--gray-400);
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .kpi-detail {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 28px 0 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .table-wrapper {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 28px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: rgba(59, 130, 246, 0.1);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tbody tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: var(--gray-700);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .phase-item {
+            margin-bottom: 20px;
+        }
+
+        .phase-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .phase-name {
+            font-weight: 500;
+        }
+
+        .phase-value {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.passed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .badge.failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .badge.pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .badge.in-progress {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--primary);
+        }
+
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .contact-group {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .contact-group-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .contact-item {
+            padding: 8px 0;
+            font-size: 12px;
+        }
+
+        .contact-name {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .contact-role {
+            color: var(--gray-400);
+            font-size: 11px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 60px;
+                width: 100%;
+                height: calc(100vh - 60px);
+                transform: translateY(-100%);
+                transition: transform 0.3s;
+                z-index: 999;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                flex-direction: row;
+                flex-wrap: wrap;
+                padding: 16px;
+                overflow-y: auto;
+            }
+
+            .sidebar.active {
+                transform: translateY(0);
+            }
+
+            .sidebar::before {
+                content: '';
+                position: fixed;
+                top: 60px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: -1;
+            }
+
+            .shell {
+                margin-left: 0;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .topbar {
+                padding: 12px 16px;
+            }
+
+            .topbar-title {
+                font-size: 16px;
+            }
+
+            .page-container {
+                padding: 16px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .alerts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 11px;
+            }
+
+            th, td {
+                padding: 8px 12px;
+            }
+
+            .contacts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar-title {
+                font-size: 14px;
+            }
+
+            .page-container {
+                padding: 12px;
+            }
+
+            .phase-label {
+                font-size: 11px;
+            }
+        }
+
+        .scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .scrollbar::-webkit-scrollbar-thumb {
+            background: var(--gray-700);
+            border-radius: 3px;
+        }
+
+        .scrollbar::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-600);
+        }
+
+        .content {
+            scrollbar-color: var(--gray-700) transparent;
+            scrollbar-width: thin;
+        }
+    </style>
 </head>
-<body>
-
-<!-- SIDEBAR -->
-<div id="sidebar" class="sidebar">
-  <div class="sb-logo">
-    <div class="sb-logo-tag">Project</div>
-    <div class="sb-logo-title">COMP3B</div>
-    <div class="sb-logo-sub">CRA Clad Pipes & HIB</div>
-  </div>
-  <div class="sb-week">
-    <div class="sb-week-label">Report Date</div>
-    <div class="sb-week-val">17.05.2026</div>
-  </div>
-  <nav class="sb-nav">
-    <div class="sb-section">Main</div>
-    <button class="sb-btn active" onclick="nav('overview', this)">
-      <i class="ti ti-home"></i> Overview
-    </button>
-    <button class="sb-btn" onclick="nav('dispatch', this)">
-      <i class="ti ti-truck-delivery"></i> Dispatch Status
-    </button>
-    <button class="sb-btn" onclick="nav('plates', this)">
-      <i class="ti ti-stack-2"></i> Plates Status
-    </button>
-    <button class="sb-btn" onclick="nav('concerns', this)">
-      <i class="ti ti-alert-circle"></i> Key Concerns
-    </button>
-    <button class="sb-btn" onclick="nav('actions', this)">
-      <i class="ti ti-checklist"></i> Actions
-    </button>
-  </nav>
-  <div class="sb-footer">
-    <div class="sb-ir">Saipem PO</div>
-    <div class="sb-irn">1506050 / 1519921 / 1541227</div>
-  </div>
-</div>
-
-<div id="sidebar-backdrop" class="sidebar-backdrop"></div>
-
-<!-- MAIN CONTENT -->
-<div class="shell">
-  <div class="topbar">
-    <div style="display:flex;align-items:center;gap:8px">
-      <button id="hamburger-btn" class="hamburger">
-        <i class="ti ti-menu-2"></i>
-      </button>
-      <div id="topbar-title" class="topbar-title">Overview</div>
+<body class="scrollbar">
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sb-logo">Inspection Report</div>
+            <div class="sb-title">EEW COMP3B</div>
+            <div class="sb-week"><span class="sb-week-val">W20</span> · 11–17 May</div>
+        </div>
+        <nav class="sb-nav">
+            <div class="sb-nav-group">
+                <div class="sb-nav-group-title">Report</div>
+                <a href="#" onclick="switchTab('overview')" class="sb-nav-item active">
+                    <i class="ti ti-layout-grid" style="width:16px;height:16px;"></i> Overview
+                </a>
+                <a href="#" onclick="switchTab('phases')" class="sb-nav-item">
+                    <i class="ti ti-trending-up" style="width:16px;height:16px;"></i> Production
+                </a>
+                <a href="#" onclick="switchTab('dispatch')" class="sb-nav-item">
+                    <i class="ti ti-box" style="width:16px;height:16px;"></i> Dispatch
+                </a>
+                <a href="#" onclick="switchTab('testing')" class="sb-nav-item">
+                    <i class="ti ti-flask" style="width:16px;height:16px;"></i> Testing
+                </a>
+            </div>
+            <div class="sb-nav-group">
+                <div class="sb-nav-group-title">Supplier</div>
+                <a href="#" onclick="switchTab('vagb')" class="sb-nav-item">
+                    <i class="ti ti-layers" style="width:16px;height:16px;"></i> VAGB Plates
+                </a>
+                <a href="#" onclick="switchTab('irn')" class="sb-nav-item">
+                    <i class="ti ti-list-check" style="width:16px;height:16px;"></i> IRN / NCR
+                </a>
+            </div>
+            <div class="sb-nav-group">
+                <div class="sb-nav-group-title">Admin</div>
+                <a href="#" onclick="switchTab('activities')" class="sb-nav-item">
+                    <i class="ti ti-calendar" style="width:16px;height:16px;"></i> Activities
+                </a>
+                <a href="#" onclick="switchTab('contacts')" class="sb-nav-item">
+                    <i class="ti ti-users" style="width:16px;height:16px;"></i> Contacts
+                </a>
+            </div>
+        </nav>
+        <div class="sb-footer">
+            <div style="margin-bottom: 8px;">Report ID</div>
+            <div class="sb-irn">IR-075</div>
+        </div>
     </div>
-    <div class="topbar-badges">
-      <span class="badge b-warn">On Schedule</span>
-      <span class="badge b-info">W 20/52</span>
+
+    <div class="shell">
+        <div class="topbar">
+            <div class="topbar-left">
+                <button class="hamburger" id="hamburger" onclick="toggleSidebar()">☰</button>
+                <div class="topbar-title" id="topbar-title">Overview</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="page-container">
+                <!-- OVERVIEW TAB -->
+                <div class="tab-content active" id="overview">
+                    <div class="page-header">
+                        <h1 class="page-title">Overview</h1>
+                        <p class="page-subtitle">Executive summary & critical alerts</p>
+                    </div>
+
+                    <div class="alerts-grid">
+                        <div class="alert-card warning">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 4v2M6.228 6.228a9 9 0 1012.544 0M3 12a9 9 0 0118 0"></path>
+                            </svg>
+                            <div class="alert-content">
+                                <h4>VAGB Delivery Delay</h4>
+                                <p>Plates delayed by 2 weeks vs schedule</p>
+                            </div>
+                        </div>
+                        <div class="alert-card warning">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 4v2M6.228 6.228a9 9 0 1012.544 0M3 12a9 9 0 0118 0"></path>
+                            </svg>
+                            <div class="alert-content">
+                                <h4>Line Pipes Release</h4>
+                                <p>PO Saipem vs Sumitomo mismatch</p>
+                            </div>
+                        </div>
+                        <div class="alert-card success">
+                            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div class="alert-content">
+                                <h4>All NCR Closed</h4>
+                                <p>8/8 NCR items resolved</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Final Inspection Progress</div>
+                            <div class="kpi-value">59.8%</div>
+                            <div class="kpi-detail">2,653 / 4,440 items</div>
+                        </div>
+                        <div class="kpi-card warning">
+                            <div class="kpi-label">VAGB Plates Progress</div>
+                            <div class="kpi-value">78.32%</div>
+                            <div class="kpi-detail">3,526 / 4,502 plates</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Pipes Released</div>
+                            <div class="kpi-value">2,397</div>
+                            <div class="kpi-detail">All PO combined</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Pipes Sent</div>
+                            <div class="kpi-value">1,462</div>
+                            <div class="kpi-detail">To destination</div>
+                        </div>
+                    </div>
+
+                    <div class="section-title">Purchase Orders</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Purchase Order</th>
+                                    <th>Items</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>PO 1506050</td>
+                                    <td>16</td>
+                                    <td><span class="badge in-progress">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td>PO 1519921</td>
+                                    <td>4</td>
+                                    <td><span class="badge passed">Closed</span></td>
+                                </tr>
+                                <tr>
+                                    <td>PO 1541227</td>
+                                    <td>4</td>
+                                    <td><span class="badge passed">Closed</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PRODUCTION PHASES TAB -->
+                <div class="tab-content" id="phases">
+                    <div class="page-header">
+                        <h1 class="page-title">Production Phases</h1>
+                        <p class="page-subtitle">Completion status by phase</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Overall Progress</div>
+                            <div class="kpi-value">59.8%</div>
+                            <div class="kpi-detail">2,653 items completed</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Milling</div>
+                            <div class="kpi-value">60.2%</div>
+                            <div class="kpi-detail">2,675 / 4,440</div>
+                        </div>
+                    </div>
+
+                    <div class="section-title">Phase Breakdown</div>
+                    <div class="table-wrapper">
+                        <div style="padding: 20px;">
+                            <div class="phase-item">
+                                <div class="phase-label">
+                                    <span class="phase-name">Milling</span>
+                                    <span class="phase-value">60.2%</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 60.2%"></div>
+                                </div>
+                                <div style="font-size: 11px; color: var(--gray-400); margin-top: 4px;">2,675 / 4,440</div>
+                            </div>
+
+                            <div class="phase-item">
+                                <div class="phase-label">
+                                    <span class="phase-name">Welding Base</span>
+                                    <span class="phase-value">60.1%</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 60.1%"></div>
+                                </div>
+                                <div style="font-size: 11px; color: var(--gray-400); margin-top: 4px;">2,670 / 4,440</div>
+                            </div>
+
+                            <div class="phase-item">
+                                <div class="phase-label">
+                                    <span class="phase-name">Welding Clad</span>
+                                    <span class="phase-value">60.1%</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 60.1%"></div>
+                                </div>
+                                <div style="font-size: 11px; color: var(--gray-400); margin-top: 4px;">2,669 / 4,440</div>
+                            </div>
+
+                            <div class="phase-item">
+                                <div class="phase-label">
+                                    <span class="phase-name">Hydro Test</span>
+                                    <span class="phase-value">60.1%</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 60.1%"></div>
+                                </div>
+                                <div style="font-size: 11px; color: var(--gray-400); margin-top: 4px;">2,667 / 4,440</div>
+                            </div>
+
+                            <div class="phase-item">
+                                <div class="phase-label">
+                                    <span class="phase-name">UT (Ultrasonic)</span>
+                                    <span class="phase-value">60.0%</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 60.0%"></div>
+                                </div>
+                                <div style="font-size: 11px; color: var(--gray-400); margin-top: 4px;">2,666 / 4,440</div>
+                            </div>
+
+                            <div class="phase-item">
+                                <div class="phase-label">
+                                    <span class="phase-name">RT (Radiographic)</span>
+                                    <span class="phase-value">60.0%</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 60.0%"></div>
+                                </div>
+                                <div style="font-size: 11px; color: var(--gray-400); margin-top: 4px;">2,665 / 4,440</div>
+                            </div>
+
+                            <div class="phase-item">
+                                <div class="phase-label">
+                                    <span class="phase-name">PT (Penetrant)</span>
+                                    <span class="phase-value">60.0%</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 60.0%"></div>
+                                </div>
+                                <div style="font-size: 11px; color: var(--gray-400); margin-top: 4px;">2,664 / 4,440</div>
+                            </div>
+
+                            <div class="phase-item">
+                                <div class="phase-label">
+                                    <span class="phase-name">Final Inspection</span>
+                                    <span class="phase-value">59.8%</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 59.8%"></div>
+                                </div>
+                                <div style="font-size: 11px; color: var(--gray-400); margin-top: 4px;">2,653 / 4,440</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DISPATCH TAB -->
+                <div class="tab-content" id="dispatch">
+                    <div class="page-header">
+                        <h1 class="page-title">Dispatch Status</h1>
+                        <p class="page-subtitle">Released, sent, and available items</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Total Released</div>
+                            <div class="kpi-value">2,397</div>
+                            <div class="kpi-detail">All PO combined</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Total Sent</div>
+                            <div class="kpi-value">1,462</div>
+                            <div class="kpi-detail">To destination</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Available Stock</div>
+                            <div class="kpi-value">935</div>
+                            <div class="kpi-detail">Ready for shipment</div>
+                        </div>
+                    </div>
+
+                    <div class="section-title">Dispatch by PO</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>PO</th>
+                                    <th>Released</th>
+                                    <th>Sent</th>
+                                    <th>Available</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1506050</td>
+                                    <td>2,373</td>
+                                    <td>1,441</td>
+                                    <td>932</td>
+                                </tr>
+                                <tr style="opacity: 0.6;">
+                                    <td>1519921 <span class="badge passed" style="margin-left: 8px; font-size: 10px;">Closed</span></td>
+                                    <td>9</td>
+                                    <td>6</td>
+                                    <td>3</td>
+                                </tr>
+                                <tr style="opacity: 0.6;">
+                                    <td>1541227 <span class="badge passed" style="margin-left: 8px; font-size: 10px;">Closed</span></td>
+                                    <td>15</td>
+                                    <td>15</td>
+                                    <td>0</td>
+                                </tr>
+                                <tr style="font-weight: 600; border-top: 2px solid var(--border-color);">
+                                    <td>Total</td>
+                                    <td>2,397</td>
+                                    <td>1,462</td>
+                                    <td>935</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TESTING TAB -->
+                <div class="tab-content" id="testing">
+                    <div class="page-header">
+                        <h1 class="page-title">Mechanical Testing</h1>
+                        <p class="page-subtitle">Test results & status</p>
+                    </div>
+
+                    <div class="section-title">Weekly Status</div>
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; font-size: 13px; line-height: 1.6; margin-bottom: 28px;">
+                        <p style="color: var(--text-secondary);">
+                            <strong>No Mechanical Test activities scheduled on Week 20</strong>
+                        </p>
+                        <p style="color: var(--gray-400); margin-top: 8px; font-size: 12px;">
+                            The manufacturer has not provided scheduled testing data for this week. Regular mechanical testing activities including Tensile, CVN Impact, Bend, HIC, and SSCC tests are part of the ongoing quality assurance program.
+                        </p>
+                    </div>
+
+                    <div class="section-title">NOI Status</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>NOI Number</th>
+                                    <th>Activity</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>NOI-143 Rev.01</td>
+                                    <td>All mechanical testing activities</td>
+                                    <td><span class="badge in-progress">Ongoing</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VAGB TAB -->
+                <div class="tab-content" id="vagb">
+                    <div class="page-header">
+                        <h1 class="page-title">VAGB Plates Status</h1>
+                        <p class="page-subtitle">Material delivery & schedule</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card warning">
+                            <div class="kpi-label">Overall Progress</div>
+                            <div class="kpi-value">78.32%</div>
+                            <div class="kpi-detail">3,526 / 4,502 plates</div>
+                        </div>
+                        <div class="kpi-card critical">
+                            <div class="kpi-label">Delta vs Target</div>
+                            <div class="kpi-value">-21.68%</div>
+                            <div class="kpi-detail">976 plates short</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">W20 Delivered</div>
+                            <div class="kpi-value">116</div>
+                            <div class="kpi-detail">This week</div>
+                        </div>
+                    </div>
+
+                    <div class="section-title">Weekly Delivery Schedule</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Week</th>
+                                    <th>Scheduled</th>
+                                    <th>Received</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>W18</td>
+                                    <td>101</td>
+                                    <td>162</td>
+                                    <td><span class="badge passed">Complete</span></td>
+                                </tr>
+                                <tr>
+                                    <td>W19</td>
+                                    <td>160</td>
+                                    <td>260</td>
+                                    <td><span class="badge passed">Complete</span></td>
+                                </tr>
+                                <tr>
+                                    <td>W20</td>
+                                    <td>—</td>
+                                    <td>116</td>
+                                    <td><span class="badge in-progress">In Progress</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 16px; margin-top: 28px; color: var(--text-secondary); font-size: 12px; line-height: 1.6;">
+                        <p style="color: var(--danger); font-weight: 600; margin-bottom: 8px;">⚠️ Delivery Delay Alert</p>
+                        <p>A sustained downward trend in weekly deliveries persists. Although VAGB forecasts an imminent ramp-up, the previous shortfall in capacity has caused a <strong>two-week slippage</strong> against the VAGB Statement timeline. Focus on expediting plate deliveries and increase coordination with VAGB.</p>
+                    </div>
+                </div>
+
+                <!-- IRN / NCR TAB -->
+                <div class="tab-content" id="irn">
+                    <div class="page-header">
+                        <h1 class="page-title">IRN & NCR Status</h1>
+                        <p class="page-subtitle">Inspection request notes & non-conformance reports</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Total IRN Issued</div>
+                            <div class="kpi-value">76</div>
+                            <div class="kpi-detail">All IRN</div>
+                        </div>
+                        <div class="kpi-card success">
+                            <div class="kpi-label">W20 New IRN</div>
+                            <div class="kpi-value">1</div>
+                            <div class="kpi-detail">IRN-76</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">NCR Status</div>
+                            <div class="kpi-value">None</div>
+                            <div class="kpi-detail">W20</div>
+                        </div>
+                    </div>
+
+                    <div class="section-title">W20 IRN Issued</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>IRN Number</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>IRN-76</strong></td>
+                                    <td>Inspection Release Note</td>
+                                    <td><span class="badge in-progress">Issued</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="section-title">Weekly Inspection Summary</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Positive Results</strong></td>
+                                    <td>Materials released for fabrication per ITP</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Negative Results</strong></td>
+                                    <td>None</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Pending/NCR</strong></td>
+                                    <td>SharePoint review on-going</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ACTIVITIES TAB -->
+                <div class="tab-content" id="activities">
+                    <div class="page-header">
+                        <h1 class="page-title">Weekly Activities</h1>
+                        <p class="page-subtitle">Scheduled inspection & monitoring activities</p>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Report Week</div>
+                            <div class="kpi-value">W20</div>
+                            <div class="kpi-detail">11–17 May 2026</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Production Status</div>
+                            <div class="kpi-value">Slow</div>
+                            <div class="kpi-detail">Ongoing monitoring</div>
+                        </div>
+                        <div class="kpi-card critical">
+                            <div class="kpi-label">Key Issue</div>
+                            <div class="kpi-value">No Operations</div>
+                            <div class="kpi-detail">vs W19 (No change)</div>
+                        </div>
+                    </div>
+
+                    <div class="section-title">Inspection Activities (W20)</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Activity</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>11.05.2026</td>
+                                    <td>ITP Position 6 - Incoming plates inspection & certificate</td>
+                                    <td><span class="badge in-progress">Slow activity</span></td>
+                                </tr>
+                                <tr>
+                                    <td>12.05.2026</td>
+                                    <td>ITP Position 6 - Incoming plates inspection & certificate</td>
+                                    <td><span class="badge in-progress">Slow activity</span></td>
+                                </tr>
+                                <tr>
+                                    <td>13.05.2026</td>
+                                    <td>ITP Position 6 - Incoming plates inspection & certificate</td>
+                                    <td><span class="badge in-progress">Slow activity</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="section-title">Tally Lists</div>
+                    <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 16px; font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+                        <p>Tally list not provided to CONTRACTOR due to the absence of scheduled Final Visual Inspection activities.</p>
+                    </div>
+
+                    <div class="section-title">Weekly Summary</div>
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; font-size: 13px; line-height: 1.6;">
+                        <p style="color: var(--text-secondary); margin-bottom: 12px;">
+                            <strong>Progress Recorded:</strong> With reference to the previous week (No. 19), there were no operations or activities carried out. The project is progressing, though at a significantly slower rate in comparison to previous months.
+                        </p>
+                        <p style="color: var(--text-secondary);">
+                            <strong>Key Monitoring:</strong> Ongoing monitoring and communication with suppliers continues to ensure timely delivery. Weekly meetings with EEW's Quality Manager are maintained to review progress and ensure quality standards.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- CONTACTS TAB -->
+                <div class="tab-content" id="contacts">
+                    <div class="page-header">
+                        <h1 class="page-title">Contact List</h1>
+                        <p class="page-subtitle">Key personnel by organization</p>
+                    </div>
+
+                    <div class="contacts-grid">
+                        <div class="contact-group">
+                            <div class="contact-group-title">Sumitomo</div>
+                            <div class="contact-item">
+                                <div class="contact-name">Ms. Maria de la Ossa</div>
+                                <div class="contact-role">Project Manager</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-name">Ms. Saiko Tsuji</div>
+                                <div class="contact-role">Project Assistant & Document Controller</div>
+                            </div>
+                        </div>
+
+                        <div class="contact-group">
+                            <div class="contact-group-title">EEW Pipe</div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. Sebastian Wilkes</div>
+                                <div class="contact-role">Head of Project & Order Management</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. Stefan Frank</div>
+                                <div class="contact-role">QC Inspector</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. Adriano Carvalho</div>
+                                <div class="contact-role">QC Inspector</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. L. Strauß</div>
+                                <div class="contact-role">QC Inspector</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. Steffen Scheld</div>
+                                <div class="contact-role">Product Quality</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. Artemij Miller</div>
+                                <div class="contact-role">Head of Welding Technology</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. R. Kuhles</div>
+                                <div class="contact-role">Quality Control/Quality Assurance</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. Ruediger Wendel</div>
+                                <div class="contact-role">Quality Control/Quality Assurance</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. Tyler Hartman</div>
+                                <div class="contact-role">Head of Product Testing</div>
+                            </div>
+                        </div>
+
+                        <div class="contact-group">
+                            <div class="contact-group-title">EEW/Sumitomo - TPIA</div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. Syed Hassan</div>
+                                <div class="contact-role">TPIA obo EEW/SUMITOMO</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. Fijo Therattil</div>
+                                <div class="contact-role">TPIA obo EEW/SUMITOMO</div>
+                            </div>
+                        </div>
+
+                        <div class="contact-group">
+                            <div class="contact-group-title">QE LNG (Qatar Energies)</div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. Massimo Stragapede</div>
+                                <div class="contact-role">QE LNG Representative</div>
+                            </div>
+                        </div>
+
+                        <div class="contact-group">
+                            <div class="contact-group-title">Saipem / IQS</div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. Gregorio Muci</div>
+                                <div class="contact-role">IQS Project Plant Lead obo SAIPEM</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. Vito Mangiulli</div>
+                                <div class="contact-role">IQS Inspector obo SAIPEM</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. Pierfrancesco Nitti</div>
+                                <div class="contact-role">IQS Inspector obo SAIPEM</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. Donato Salamida</div>
+                                <div class="contact-role">IQS Inspector obo SAIPEM</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-name">Mr. Mimmo Sammarco</div>
+                                <div class="contact-role">IQS Inspector obo SAIPEM</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div class="content">
+    <script>
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
 
-    <!-- ===== OVERVIEW SECTION ===== -->
-    <section id="overview" class="section active">
-      
-      <div class="kpi-grid">
-        <div class="kpi g">
-          <div class="kpi-title">VAGB Plates Delivered</div>
-          <div class="kpi-value">3,526</div>
-          <div class="kpi-subtitle">of 4,502 (78.32%)</div>
-        </div>
-        <div class="kpi b">
-          <div class="kpi-title">EEW Pipes Released</div>
-          <div class="kpi-value">2,667</div>
-          <div class="kpi-subtitle">Production ongoing</div>
-        </div>
-        <div class="kpi w">
-          <div class="kpi-title">Scheduled Delivery</div>
-          <div class="kpi-value">-2W</div>
-          <div class="kpi-subtitle">Slippage vs VAGB</div>
-        </div>
-        <div class="kpi r">
-          <div class="kpi-title">Missing</div>
-          <div class="kpi-value">976</div>
-          <div class="kpi-subtitle">Plates pending</div>
-        </div>
-      </div>
+            const navItems = document.querySelectorAll('.sb-nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
 
-      <div class="card">
-        <div class="card-title"><i class="ti ti-info-circle"></i> Project Status</div>
-        <p style="font-size:12px;color:var(--text2);line-height:1.6">
-          The COMP3B project focuses on supplying Corrosion Resistant Alloy (CRA) Clad Line Pipes and Hot Induction Bends (HIB) for the NFPS Offshore Riser Platform &amp; Intrafield Pipelines. 
-          Progress remains aligned with timelines outlined in SAIPEM POs 1506050, 1519921, and 1541227, though production is currently progressing at a slower pace compared to previous months.
-        </p>
-      </div>
+            const titles = {
+                'overview': 'Overview',
+                'phases': 'Production Phases',
+                'dispatch': 'Dispatch Status',
+                'testing': 'Mechanical Testing',
+                'vagb': 'VAGB Plates',
+                'irn': 'IRN & NCR',
+                'activities': 'Activities',
+                'contacts': 'Contacts'
+            };
 
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-title"><i class="ti ti-package"></i> VAGB Plate Status</div>
-          <div class="status-row">
-            <span class="status-label">Delivered</span>
-            <div class="status-bar-container"><div class="status-bar" style="width:78.32%"></div></div>
-            <span class="status-percent">78.3%</span>
-          </div>
-          <div style="font-size:11px;color:var(--text3);margin-top:8px">
-            <strong>3,526</strong> plates delivered<br>
-            <strong>976</strong> plates pending (-22%)<br>
-            <strong>2-week</strong> slippage noted
-          </div>
-        </div>
+            document.getElementById('topbar-title').textContent = titles[tabName];
 
-        <div class="card">
-          <div class="card-title"><i class="ti ti-hammer"></i> EEW Production</div>
-          <div class="status-row">
-            <span class="status-label">Released</span>
-            <div class="status-bar-container"><div class="status-bar" style="width:97.4%"></div></div>
-            <span class="status-percent">97.4%</span>
-          </div>
-          <div style="font-size:11px;color:var(--text3);margin-top:8px">
-            <strong>2.6%</strong> discrepancy rate<br>
-            Production rate: <strong>Slower</strong><br>
-            Status: Progressing
-          </div>
-        </div>
-      </div>
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('active');
+            }
+        }
 
-    </section>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
 
-    <!-- ===== DISPATCH STATUS SECTION ===== -->
-    <section id="dispatch" class="section">
-      
-      <div class="card">
-        <div class="card-title"><i class="ti ti-truck-delivery"></i> Dispatch Status as of 17.05.2026</div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Category</th>
-                <th>Quantity</th>
-                <th>Status</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>IRN Pipes Status</strong></td>
-                <td>Multiple</td>
-                <td><span class="badge b-info">In Progress</span></td>
-                <td>SAIPEM PO tracking</td>
-              </tr>
-              <tr>
-                <td><strong>Pipes Sent</strong></td>
-                <td>Monitored</td>
-                <td><span class="badge b-ok">Active</span></td>
-                <td>Weekly monitoring</td>
-              </tr>
-              <tr>
-                <td><strong>Pipes Available</strong></td>
-                <td>2,667</td>
-                <td><span class="badge b-info">In Queue</span></td>
-                <td>Ready for further processing</td>
-              </tr>
-              <tr>
-                <td><strong>Stacked Antwerp</strong></td>
-                <td>Pending</td>
-                <td><span class="badge b-warn">Monitoring</span></td>
-                <td>Logistics coordination required</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburger');
+            if (window.innerWidth <= 768 && !sidebar.contains(e.target) && !hamburger.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
 
-      <div class="alert info">
-        <i class="ti ti-info-circle alert-icon"></i>
-        <div class="alert-text">
-          <strong>PO Data Alignment:</strong> There is a discrepancy between SAIPEM PO dataset and EEW's records. The SAIPEM dataset reflects the SAIPEM PO, while EEW references correspond to the SUMITOMO PO. This affects all related calculations and reporting.
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ===== PLATES STATUS SECTION ===== -->
-    <section id="plates" class="section">
-      
-      <div class="card">
-        <div class="card-title"><i class="ti ti-stack-2"></i> VA EEW Plates Status (13.05.2026)</div>
-        <div class="stats-grid">
-          <div class="stat-box">
-            <div class="stat-value">3,526</div>
-            <div class="stat-label">Delivered</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-value">78.32%</div>
-            <div class="stat-label">Completion</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-value">4,502</div>
-            <div class="stat-label">Total PO Qty</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-value">976</div>
-            <div class="stat-label">Outstanding</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title"><i class="ti ti-calendar"></i> VA Scheduled Delivery - May 2026</div>
-        <p style="font-size:11px;color:var(--text3);margin-bottom:12px">
-          According to VAGB's planned delivery schedule for May 2026. EEW provides daily raw data with IQS analysis.
-        </p>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Delivery Week</th>
-                <th>Target Qty</th>
-                <th>Status</th>
-                <th>Cumulative %</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>W1-2 (05-17 May)</td>
-                <td>Recovery Phase</td>
-                <td><span class="badge b-warn">In Progress</span></td>
-                <td>78.32%</td>
-              </tr>
-              <tr>
-                <td>W3-4 (18-31 May)</td>
-                <td>Ramp-up Planned</td>
-                <td><span class="badge b-info">Planned</span></td>
-                <td>Forecast</td>
-              </tr>
-              <tr>
-                <td>Full Delivery</td>
-                <td>4,502 pcs</td>
-                <td><span class="badge b-warn">On Track*</span></td>
-                <td>100%</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div style="font-size:10px;color:var(--text3);margin-top:8px">
-          * Subject to VAGB maintaining forecasted ramp-up pace
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ===== KEY CONCERNS SECTION ===== -->
-    <section id="concerns" class="section">
-      
-      <div class="alert danger">
-        <i class="ti ti-alert-triangle alert-icon"></i>
-        <div class="alert-text">
-          <strong>Supplier Delivery Delays (VAGB):</strong> Sustained downward trend in weekly plate deliveries. Although VAGB forecasts imminent ramp-up, previous shortfall has caused 2-week slippage. Current status: 3,526 of 4,502 (78.32%).
-        </div>
-      </div>
-
-      <div class="alert danger">
-        <i class="ti ti-alert-triangle alert-icon"></i>
-        <div class="alert-text">
-          <strong>Release of Line Pipes (EEW):</strong> Project progressing at significantly slower rate vs. previous months. Current discrepancy: 2.6% for inspected and released pipes. Timely pipe releases critical for offshore construction activities.
-        </div>
-      </div>
-
-      <div class="alert warn">
-        <i class="ti ti-alert-circle alert-icon"></i>
-        <div class="alert-text">
-          <strong>Data Alignment Issue:</strong> PO quantity discrepancy between SAIPEM PO and EEW/SUMITOMO records. This affects IQS calculations for daily/weekly production progress and all related reporting.
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title"><i class="ti ti-list"></i> Action Items in Progress</div>
-        <table>
-          <thead>
-            <tr>
-              <th>Concern</th>
-              <th>Impact Level</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Plate deliveries behind schedule</td>
-              <td><span class="badge b-danger">High</span></td>
-              <td>Expedite VAGB coordination</td>
-            </tr>
-            <tr>
-              <td>Slow pipe release rate</td>
-              <td><span class="badge b-danger">High</span></td>
-              <td>Monitor EEW production trends</td>
-            </tr>
-            <tr>
-              <td>PO data discrepancy</td>
-              <td><span class="badge b-warn">Medium</span></td>
-              <td>Align SAIPEM/SUMITOMO records</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-    </section>
-
-    <!-- ===== ACTIONS SECTION ===== -->
-    <section id="actions" class="section">
-      
-      <div class="card">
-        <div class="card-title"><i class="ti ti-checklist"></i> Key Action Items</div>
-        <div style="padding:0">
-          <div style="padding:8px 0;border-bottom:0.5px solid var(--border);display:flex;gap:8px">
-            <span style="width:20px;height:20px;background:var(--green-bg);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">✓</span>
-            <div>
-              <div style="font-size:12px;font-weight:500;color:var(--text)">Maintain ongoing monitoring</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px">Continuous communication with suppliers for timely material delivery</div>
-            </div>
-          </div>
-          <div style="padding:8px 0;border-bottom:0.5px solid var(--border);display:flex;gap:8px">
-            <span style="width:20px;height:20px;background:var(--blue-bg);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">→</span>
-            <div>
-              <div style="font-size:12px;font-weight:500;color:var(--text)">Stay on track with meetings</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px">Weekly meetings transitioned to ad-hoc upon direct request (from W39)</div>
-            </div>
-          </div>
-          <div style="padding:8px 0;border-bottom:0.5px solid var(--border);display:flex;gap:8px">
-            <span style="width:20px;height:20px;background:var(--amber-bg);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">⚠</span>
-            <div>
-              <div style="font-size:12px;font-weight:500;color:var(--text)">Monitor PO delivery closure</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px">Track closure dates based on 15-day production trends from EEW</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title"><i class="ti ti-ambulance"></i> Critical Next Steps</div>
-        <ol style="font-size:12px;color:var(--text2);line-height:1.8;padding-left:20px">
-          <li style="margin-bottom:8px"><strong>Ongoing Monitoring:</strong> Production and delivery of line pipes continuously supervised to ensure project stays on schedule</li>
-          <li style="margin-bottom:8px"><strong>Supplier Coordination:</strong> Daily communication with VAGB and EEW maintained for delivery tracking and issue resolution</li>
-          <li style="margin-bottom:8px"><strong>Coordination Required:</strong> Ongoing liaison between EEW, Sumitomo, and Saipem is essential for project success</li>
-          <li style="margin-bottom:8px"><strong>Document Review:</strong> Vendor instructed subvendor to allow contractor review/check/sign through SharePoint (ongoing since 22.05.2025)</li>
-        </ol>
-      </div>
-
-      <div class="card">
-        <div class="card-title"><i class="ti ti-activity"></i> Weekly Activities Summary</div>
-        <table>
-          <thead>
-            <tr>
-              <th>Activity Type</th>
-              <th>Status (W20)</th>
-              <th>Remarks</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Final Visual Inspection</td>
-              <td><span class="badge b-info">Not Scheduled</span></td>
-              <td>Tally list not provided</td>
-            </tr>
-            <tr>
-              <td>Mechanical Testing</td>
-              <td><span class="badge b-info">Not Scheduled</span></td>
-              <td>No tests scheduled for W20</td>
-            </tr>
-            <tr>
-              <td>Production Status</td>
-              <td><span class="badge b-warn">Ongoing</span></td>
-              <td>EEW production progressing very slowly</td>
-            </tr>
-            <tr>
-              <td>Material Photos</td>
-              <td><span class="badge b-info">Not Available</span></td>
-              <td>No photos for current week</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-    </section>
-
-  </div>
-</div>
-
-<div id="sidebar-backdrop" class="sidebar-backdrop"></div>
-
-<script>
-function nav(id, btn) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.sb-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  btn.classList.add('active');
-  
-  const titles = {
-    overview: 'Overview',
-    dispatch: 'Dispatch Status',
-    plates: 'Plates Status',
-    concerns: 'Key Concerns',
-    actions: 'Actions & Next Steps'
-  };
-  
-  document.getElementById('topbar-title').textContent = titles[id] || id;
-  document.querySelector('.content').scrollTop = 0;
-  closeSidebar();
-}
-
-function openSidebar() {
-  document.getElementById('sidebar').classList.add('open');
-  document.getElementById('sidebar-backdrop').classList.add('visible');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebar-backdrop').classList.remove('visible');
-  document.body.style.overflow = '';
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  const hb = document.getElementById('hamburger-btn');
-  const bd = document.getElementById('sidebar-backdrop');
-  
-  if (hb) {
-    hb.addEventListener('click', openSidebar);
-  }
-  
-  if (bd) {
-    bd.addEventListener('click', closeSidebar);
-  }
-});
-</script>
-
+        window.addEventListener('resize', () => {
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('active');
+            }
+        });
+    </script>
 </body>
 </html>
