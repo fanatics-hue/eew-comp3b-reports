@@ -433,6 +433,34 @@ class DocxParser:
             for r in rows[1:] if r[0] and r[0].isdigit()
         ]
 
+    # ── parse tally lists (tabella dopo activities) ───────────────────────────
+
+    def _parse_tally(self):
+        ti = self._find_tbl('Tally List No.','Quantity','Length')
+        if ti < 0:
+            ti = self._find_tbl('Tally List','Item','Quantity')
+        if ti < 0: return
+        rows = self._tbl(ti)
+        tally = []
+        for r in rows[1:]:
+            if not r[0]: continue
+            if r[0].upper() in ('TOTAL', 'TOTAL.'): continue
+            tally.append({
+                'date':     r[0] if len(r)>0 else '',
+                'no':       r[1] if len(r)>1 else '',
+                'item':     r[2] if len(r)>2 else '',
+                'qty':      r[3] if len(r)>3 else '',
+                'length':   r[4] if len(r)>4 else '',
+                'saipem':   r[5] if len(r)>5 else '',
+                'remarks':  r[6] if len(r)>6 else '',
+            })
+        # leggi anche riga TOTAL
+        for r in rows[1:]:
+            if r[0].upper() in ('TOTAL', 'TOTAL.'):
+                self.data['tally_total'] = {'qty': r[3] if len(r)>3 else '', 'length': r[4] if len(r)>4 else ''}
+                break
+        self.data['tally'] = tally
+
     # ── entry point ───────────────────────────────────────────────────────────
 
     def _parse(self):
@@ -446,6 +474,7 @@ class DocxParser:
         self._parse_yearly()
         self._parse_wow()
         self._parse_activities()
+        self._parse_tally()
         self._parse_plates()
         self._parse_hse()
         self._parse_photos()
@@ -570,6 +599,22 @@ def build_html(d):
   <span class="adesc">{esc(a["desc"])}</span>
   <span class="anote">{esc(a["notes"])}</span>
 </div>\n'''
+
+    # Tally table
+    tally_rows = ''
+    for t in d.get('tally', []):
+        tally_rows += f'''<tr>
+  <td>{esc(t["date"])}</td><td class="mono">{esc(t["no"])}</td>
+  <td>{esc(t["item"])}</td><td><strong>{esc(t["qty"])}</strong></td>
+  <td>{esc(t["length"])}</td><td>{esc(t["saipem"])}</td>
+  <td style="font-size:11px">{esc(t["remarks"])}</td>
+</tr>\n'''
+    tt = d.get('tally_total', {})
+    if tt:
+        tally_rows += f'''<tr class="rh">
+  <td colspan="3">Total</td><td><strong>{esc(tt.get("qty",""))}</strong></td>
+  <td>{esc(tt.get("length",""))}</td><td colspan="2"></td>
+</tr>\n'''
 
     # Phases bars data for JS
     phases_js = '[\n'
@@ -1038,6 +1083,13 @@ tbody tr:hover td{background:var(--bg2)}
     <div style="font-size:11px;color:var(--text3);margin-bottom:12px">ITP: 5129_20-4600015016-00054 Rev.06 AFC</div>
     {acts_html}
   </div>
+  {f'''<div class="card">
+    <div class="ct"><i class="ti ti-clipboard-list"></i>Tally Lists — Weekly Summary</div>
+    <div class="tw"><table><thead><tr>
+      <th>Date</th><th>Tally List No.</th><th>Item</th><th>Qty (pipes)</th>
+      <th>Length (mm)</th><th>Saipem / QE Item</th><th>Remarks</th>
+    </tr></thead><tbody>{tally_rows}</tbody></table></div>
+  </div>''' if tally_rows else ''}
 </div>
 
 <!-- VAGB PLATES -->
