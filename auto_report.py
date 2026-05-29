@@ -1037,7 +1037,6 @@ tbody tr:hover td{background:var(--bg2)}
     <div class="ct"><i class="ti ti-calendar-event"></i>Activities — {range_en}</div>
     <div style="font-size:11px;color:var(--text3);margin-bottom:12px">ITP: 5129_20-4600015016-00054 Rev.06 AFC</div>
     {acts_html}
-    <div style="margin-top:12px;padding:10px 13px;background:var(--bg2);border-radius:var(--r);font-size:12px;color:var(--text2)">Tally list not provided — no Final Visual Inspection scheduled.</div>
   </div>
 </div>
 
