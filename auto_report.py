@@ -256,7 +256,12 @@ class DocxParser:
     # ── parse attività settimanali (tabella 19) ──────────────────────────────
 
     def _parse_activities(self):
+        # Prova varianti header (il nome colonna cambia tra versioni del report)
         ti = self._find_tbl('Date','ITP Pos.','Description')
+        if ti < 0:
+            ti = self._find_tbl('Date','ITP Pos','Activity')
+        if ti < 0:
+            ti = self._find_tbl('Date','ITP','Description')
         if ti < 0: return
         rows = self._tbl(ti)
         self.data['activities'] = [
