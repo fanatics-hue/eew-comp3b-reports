@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IR-079-EEW COMP3B — Weekly Report 14/06/2026</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --accent:#1D9E75;--accent2:#378ADD;--warn:#EF9F27;--danger:#E24B4A;
+  --bg:#ffffff;--bg2:#f5f5f3;--bg3:#eeede8;
+  --text:#1a1a18;--text2:#5f5e5a;--text3:#888780;
+  --border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.17);
+  --r:8px;--rl:12px;
+  --font:-apple-system,'Segoe UI',system-ui,sans-serif;
+  --mono:'SF Mono','Consolas','Liberation Mono',monospace;
+  --gn-bg:#EAF3DE;--gn-t:#27500A;--am-bg:#FAEEDA;--am-t:#633806;
+  --rd-bg:#FCEBEB;--rd-t:#A32D2D;--bl-bg:#E6F1FB;--bl-t:#0C447C;
+  --tl-bg:#9FE1CB;--tl-t:#085041;--pu-bg:#CECBF6;--pu-t:#3C3489;
+  --sw:210px;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#1c1c1a;--bg2:#252523;--bg3:#2e2e2b;--text:#f0efe8;--text2:#b4b2a9;--text3:#888780;
+    --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.17);
+    --gn-bg:#173404;--gn-t:#C0DD97;--am-bg:#412402;--am-t:#FAC775;
+    --rd-bg:#501313;--rd-t:#F7C1C1;--bl-bg:#042C53;--bl-t:#B5D4F4;
+    --tl-bg:#04342C;--tl-t:#9FE1CB;--pu-bg:#26215C;--pu-t:#CECBF6;}
+}
+html,body{height:100%;font-family:var(--font);font-size:13px;background:var(--bg3);color:var(--text);line-height:1.5}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sw);background:var(--bg2);border-right:0.5px solid var(--border2);display:flex;flex-direction:column;z-index:100;transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.sb-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+.sb-backdrop.open{display:block}
+.sb-logo{padding:18px 16px 14px;border-bottom:0.5px solid var(--border)}
+.sb-tag{font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.sb-title{font-size:14px;font-weight:500;color:var(--text)}
+.sb-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.sb-week{margin:10px 12px;background:var(--bg3);border-radius:var(--r);padding:9px 11px;border:0.5px solid var(--border)}
+.sb-wl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.sb-wv{font-size:12px;font-weight:500;color:var(--text);margin-top:1px}
+.sb-nav{flex:1;padding:8px 0;overflow-y:auto}
+.sb-sec{font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;padding:12px 16px 4px}
+.sb-btn{display:flex;align-items:center;gap:8px;width:100%;padding:7px 16px;border:none;background:transparent;font-family:var(--font);font-size:12px;color:var(--text2);cursor:pointer;text-align:left;border-left:2px solid transparent;transition:all .14s}
+.sb-btn i{font-size:15px;opacity:.6}
+.sb-btn:hover{background:var(--bg);color:var(--text)}
+.sb-btn.active{background:var(--bg);color:var(--text);border-left-color:var(--accent);font-weight:500}
+.sb-btn.active i{opacity:1;color:var(--accent)}
+.sb-foot{padding:14px 16px;border-top:0.5px solid var(--border)}
+.sb-irlabel{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.sb-irn{font-size:12px;color:var(--text2);margin-top:2px;font-family:var(--mono)}
+.main{margin-left:var(--sw);height:100vh;display:flex;flex-direction:column}
+.topbar{padding:11px 24px;background:var(--bg);border-bottom:0.5px solid var(--border2);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0}
+.tb-title{font-size:14px;font-weight:500;color:var(--text)}
+.tb-badges{display:flex;gap:6px}
+.badge{font-size:10px;font-weight:500;padding:3px 9px;border-radius:100px;white-space:nowrap}
+.bw{background:var(--am-bg);color:var(--am-t)}.bg{background:var(--gn-bg);color:var(--gn-t)}.bi{background:var(--bl-bg);color:var(--bl-t)}
+.hamburger{display:none;align-items:center;justify-content:center;width:34px;height:34px;border:none;background:var(--bg2);border-radius:var(--r);cursor:pointer;border:0.5px solid var(--border)}
+.hamburger i{font-size:18px;color:var(--text2)}
+.content{padding:20px 24px;overflow-y:auto;flex:1;min-height:0}
+.section{display:none}.section.active{display:block}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.kpi{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:12px 14px;position:relative}
+.kpi::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
+.kg::before{background:var(--accent)}.kb::before{background:var(--accent2)}.kw::before{background:var(--warn)}.kr::before{background:var(--danger)}
+.kl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.kv{font-size:22px;font-weight:500;color:var(--text);line-height:1;letter-spacing:-.02em}
+.ks{font-size:10px;color:var(--text3);margin-top:3px}
+.alert{padding:10px 13px;border-left:2px solid;margin-bottom:10px;font-size:12px;line-height:1.6;border-radius:0 var(--r) var(--r) 0}
+.aw{background:var(--am-bg);border-color:var(--warn);color:var(--am-t)}
+.ai{background:var(--bl-bg);border-color:var(--accent2);color:var(--bl-t)}
+.ag{background:var(--gn-bg);border-color:var(--accent);color:var(--gn-t)}
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:16px 18px;margin-bottom:12px}
+.ct{font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:13px;display:flex;align-items:center;gap:7px}
+.ct i{font-size:14px;opacity:.55}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{font-size:10px;font-weight:500;color:var(--text3);text-align:left;padding:7px 10px;border-bottom:0.5px solid var(--border2);background:var(--bg2);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+td{padding:8px 10px;border-bottom:0.5px solid var(--border);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg2)}
+.mono{font-family:var(--mono);font-size:11px;color:var(--text2)}
+.rh td{background:var(--bg2);font-weight:500}
+.pill{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:100px;white-space:nowrap}
+.pg{background:var(--gn-bg);color:var(--gn-t)}.pa{background:var(--am-bg);color:var(--am-t)}
+.pr{background:var(--rd-bg);color:var(--rd-t)}.pb{background:var(--bl-bg);color:var(--bl-t)}
+.pt{background:var(--tl-bg);color:var(--tl-t)}.pp{background:var(--pu-bg);color:var(--pu-t)}
+.pgr{background:var(--bg3);color:var(--text2)}
+.ph-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ph-row:last-child{margin-bottom:0}
+.ph-name{font-size:12px;color:var(--text2);min-width:130px}
+.ph-track{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;border:0.5px solid var(--border)}
+.ph-bar{height:100%;border-radius:3px;background:var(--accent);transition:width .9s cubic-bezier(.22,1,.36,1)}
+.ph-pct{font-size:11px;font-weight:500;color:var(--text);min-width:38px;text-align:right}
+.ph-cnt{font-size:10px;color:var(--text3);min-width:70px;text-align:right}
+.prow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border)}
+.prow:last-child{border-bottom:none}
+.av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0}
+.avb{background:var(--bl-bg);color:var(--bl-t)}.avt{background:var(--tl-bg);color:var(--tl-t)}
+.avp{background:var(--pu-bg);color:var(--pu-t)}.ava{background:var(--am-bg);color:var(--am-t)}
+.avg{background:var(--bg3);color:var(--text2)}
+.pi{flex:1;min-width:0}
+.pn{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr2{font-size:10px;color:var(--text2);margin-top:1px}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-right:6px}
+.dg{background:var(--accent)}.db{background:var(--accent2)}.da{background:var(--warn)}.dr{background:var(--danger)}
+.irn-list{max-height:300px;overflow-y:auto}
+.irn-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border);font-size:12px}
+.irn-row:last-child{border-bottom:none}
+.irn-id{font-family:var(--mono);font-size:10px;color:var(--text3);min-width:130px}
+.irn-desc{color:var(--text);flex:1}
+.crow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:12px}
+.crow:last-child{border-bottom:none}
+.clabel{flex:1;color:var(--text2)}
+.sep{height:0.5px;background:var(--border);margin:12px 0}
+.arow{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:0.5px solid var(--border)}
+.arow:last-child{border-bottom:none}
+.adate{font-family:var(--mono);font-size:11px;color:var(--text3);min-width:80px}
+.aitp{font-size:10px;font-weight:500;color:var(--text3);min-width:36px;text-align:center}
+.adesc{flex:1;font-size:12px;color:var(--text)}
+.anote{font-size:11px;color:var(--text2)}
+.sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--warn)}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.photo-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden}
+.photo-img{width:100%;height:130px;object-fit:cover;display:block;cursor:zoom-in;transition:opacity .15s}
+.photo-img:hover{opacity:.88}
+.photo-cap{padding:7px 10px;font-size:10px;color:var(--text2)}
+.lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.lb.open{display:flex}
+.lb img{max-width:90vw;max-height:82vh;border-radius:4px;object-fit:contain}
+.lb-cap{color:#fff;font-size:12px;opacity:.8}
+.lb-close{position:absolute;top:16px;right:20px;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;opacity:.7}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:#fff;font-size:22px;cursor:pointer;padding:10px 14px;border-radius:4px}
+#lb-prev{left:16px}#lb-next{right:16px}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);width:80vw;max-width:260px;box-shadow:4px 0 32px rgba(0,0,0,.25)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .topbar{padding:10px 14px}
+  .tb-badges{display:none}
+  .hamburger{display:flex}
+  .content{padding:12px 14px}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .two{grid-template-columns:1fr}
+  .card{padding:12px 14px}
+  table{min-width:460px;font-size:11px}
+  th{font-size:10px;padding:6px 8px}td{padding:6px 8px;font-size:11px}
+  .ph-name{min-width:100px;font-size:11px}.ph-cnt{display:none}
+  .photo-grid{grid-template-columns:repeat(2,1fr)}
+  .photo-img{height:110px}
+}
+@media(max-width:480px){
+  .content{padding:10px}.kpi-grid{gap:6px}.kpi{padding:9px 10px}.kv{font-size:18px}
+  .card{padding:10px 12px}table{min-width:380px}th,td{padding:5px 7px}
+  .photo-img{height:90px}
+}
+@media print{
+  .sidebar,.sb-backdrop,.hamburger{display:none!important}
+  .main{margin-left:0;height:auto}
+  .content{overflow:visible;padding:1rem}
+  .section{display:block!important;page-break-before:always}
+  .section:first-of-type{page-break-before:auto}
+}
+</style>
+</head>
+<body>
+
+<div class="sb-backdrop" id="sb-backdrop"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-tag">NFPS COMP3B</div>
+    <div class="sb-title">EEW Weekly Report</div>
+    <div class="sb-sub">Erndtebrück · Saipem / QE LNG</div>
+  </div>
+  <div class="sb-week">
+    <div class="sb-wl">Reference week</div>
+    <div class="sb-wv">W24 &bull; 08&#8211;14 June 2026</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Report</div>
+    <button class="sb-btn active" onclick="nav('overview',this)"><i class="ti ti-layout-dashboard"></i>Overview</button>
+    <button class="sb-btn" onclick="nav('phases',this)"><i class="ti ti-chart-bar"></i>Production phases</button>
+    <button class="sb-btn" onclick="nav('dispatch',this)"><i class="ti ti-truck"></i>Dispatch</button>
+    <button class="sb-btn" onclick="nav('activities',this)"><i class="ti ti-calendar-event"></i>Weekly activities</button>
+    <div class="sb-sec">Supplier</div>
+    <button class="sb-btn" onclick="nav('plates',this)"><i class="ti ti-layers"></i>VAGB plates</button>
+    <button class="sb-btn" onclick="nav('irns',this)"><i class="ti ti-file-description"></i>IRN / NCR</button>
+    <div class="sb-sec">Admin</div>
+    <button class="sb-btn" onclick="nav('docs',this)"><i class="ti ti-folder"></i>ITP documents</button>
+    <button class="sb-btn" onclick="nav('photos',this)"><i class="ti ti-photo"></i>Photos</button>
+    <button class="sb-btn" onclick="nav('hse',this)"><i class="ti ti-shield"></i>HSE / AOB</button>
+    <button class="sb-btn" onclick="nav('contacts',this)"><i class="ti ti-users"></i>Contacts</button>
+  </nav>
+  <div class="sb-foot">
+    <div class="sb-irlabel">Inspection report</div>
+    <div class="sb-irn">IR-079-EEW COMP3B</div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <button class="hamburger" id="hb-btn"><i class="ti ti-menu-2"></i></button>
+    <span class="tb-title" id="tb-title">Overview</span>
+    <div class="tb-badges">
+      <span class="badge bw">&#9651; Production slowed</span>
+      <span class="badge bg">NCR: all closed</span>
+      <span class="badge bi">Survey (S)</span>
+    </div>
+  </div>
+  <div class="content">
+
+<!-- OVERVIEW -->
+<div id="overview" class="section active">
+  <div class="kpi-grid">
+    <div class="kpi kw"><div class="kl">Line pipe progress</div><div class="kv">—</div><div class="ks">Item 00400 — ongoing</div></div>
+    <div class="kpi kb"><div class="kl">VAGB plates</div><div class="kv">88,54%</div><div class="ks">3.986 / 4.502 pcs</div></div>
+    <div class="kpi kg"><div class="kl">Pipes released</div><div class="kv">—</div><div class="ks">3 purchase orders</div></div>
+    <div class="kpi kg"><div class="kl">Ready for dispatch</div><div class="kv">—</div><div class="ks">awaiting shipment</div></div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi kb"><div class="kl">Dispatched</div><div class="kv">—</div><div class="ks">to final destination</div></div>
+    <div class="kpi kg"><div class="kl">Stacked Antwerp</div><div class="kv">663</div><div class="ks">pipes NOS</div></div>
+    <div class="kpi kg"><div class="kl">Pipes inspected</div><div class="kv">2759</div><div class="ks">total</div></div>
+    <div class="kpi kw"><div class="kl">IRNs issued</div><div class="kv">76</div><div class="ks">PL-00001 open</div></div>
+  </div>
+  <div class="alert aw"><strong>No production activity W23&rarr;W24.</strong> Delta = 0 on all ITP phases. Only activity: incoming plate inspection ITP pos.&nbsp;6.</div>
+  <div class="alert ag"><strong>VAGB recovery:</strong>  Observation: We have noted a recovery in the release of plates by VAGB this week, following a period of decreased productivity initiated at the start of 2026. As production is now moving towards completion, please refer to the VA EEW Scheduled Delivery documentation for specific figures.</div>
+
+  <div class="two">
+    <div class="card">
+      <div class="ct"><i class="ti ti-file-invoice"></i>Purchase order status</div>
+      <table><thead><tr><th>PO</th><th>Key item</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">1506050</td><td>Item 8 — Offshore LC1</td><td><span class="pill pa">— ongoing</span></td></tr>
+        <tr><td class="mono">1519921</td><td>4 items</td><td><span class="pill pg">Completed</span></td></tr>
+        <tr><td class="mono">1541227</td><td>4 items</td><td><span class="pill pg">Completed</span></td></tr>
+      </tbody></table>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-category"></i>Material distribution</div>
+      <table><thead><tr><th>Type</th><th>Qty</th><th>%</th></tr></thead>
+      <tbody></tbody></table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-list"></i>Item summary — PO 1506050</div>
+    <table><thead><tr><th>Item</th><th>Pipes</th><th>Completion</th><th>Status</th></tr></thead>
+    <tbody></tbody></table>
+  </div>
+</div>
+
+<!-- PRODUCTION PHASES -->
+<div id="phases" class="section">
+  <div class="card">
+    <div class="ct"><i class="ti ti-chart-bar"></i>ITP phase completion — all items</div>
+    <div id="phase-bars"></div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-table"></i>Phase snapshot</div>
+    <div class="tw"><table><thead><tr><th>Phase</th><th>Completed</th><th>Remaining</th><th>Total</th><th>%</th></tr></thead>
+    <tbody></tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-calendar"></i>Production by year</div>
+    <div class="tw"><table><thead><tr><th>Year</th><th>Milling</th><th>Weld. Base</th><th>Weld. Clad</th><th>Hydro</th><th>UT</th><th>RT</th><th>PT</th><th>Final Insp.</th></tr></thead>
+    <tbody><tr><td>Year</td><td>Milling</td><td>Welding Base</td><td>Welding Clad</td><td>Hydro Test</td><td>UT (Ultrasonic)</td><td>RT (Radiographic)</td><td>PT (Penetrant)</td><td>Final Inspection</td></tr>
+<tr><td>2024</td><td>2</td><td>0</td></tr>
+<tr><td>2025</td><td>2090</td><td>1876</td><td>1872</td><td>1812</td><td>1806</td><td>1795</td><td>1791</td><td>1778</td></tr>
+<tr><td>2026</td><td>918</td><td>1000</td><td>975</td><td>1002</td><td>997</td><td>1012</td><td>990</td><td>963</td></tr>
+<tr class="rh"><td>TOTAL</td><td>3010</td><td>2876</td><td>2847</td><td>2814</td><td>2803</td><td>2807</td><td>2781</td><td>2741</td></tr>
+</tbody></table></div>
+  </div>
+  <div class="alert aw">Week-on-week W23&rarr;W24: delta = 0 on all phases. Raw data not provided by Vendor.</div>
+</div>
+
+<!-- DISPATCH -->
+<div id="dispatch" class="section">
+  <div class="kpi-grid">
+    <div class="kpi kg"><div class="kl">Total released</div><div class="kv">—</div><div class="ks">3 POs</div></div>
+    <div class="kpi kb"><div class="kl">Dispatched</div><div class="kv">—</div><div class="ks">to destination</div></div>
+    <div class="kpi kw"><div class="kl">Ready for dispatch</div><div class="kv">—</div><div class="ks">awaiting</div></div>
+    <div class="kpi kg"><div class="kl">Stacked Antwerp</div><div class="kv">663</div><div class="ks">pipes NOS</div></div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-truck"></i>Summary by PO — as of 14/06/2026</div>
+    <table><thead><tr><th>Saipem PO</th><th>Released</th><th>Length (mm)</th><th>Dispatched</th><th>Ready</th></tr></thead>
+    <tbody><tr>
+  <td class="mono">1506050</td><td>2504</td>
+  <td>31.073,711</td><td>1441</td>
+  <td><strong>1063</strong></td>
+</tr>
+<tr>
+  <td class="mono">1519921</td><td>9</td>
+  <td>1.119,72</td><td>6</td>
+  <td><strong>3</strong></td>
+</tr>
+<tr>
+  <td class="mono">1541227</td><td>15</td>
+  <td>1.674,04</td><td>0</td>
+  <td><strong>—</strong></td>
+</tr>
+<tr class="rh">
+  <td>Total</td><td>—</td>
+  <td>—</td><td>—</td>
+  <td>—</td>
+</tr>
+</tbody></table>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-package"></i>By category — PO 1506050</div>
+    <div class="tw"><table><thead><tr><th>Category</th><th>Released</th><th>Length (mm)</th><th>Dispatched</th><th>Ready</th></tr></thead>
+    <tbody></tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-building"></i>Stacked at Antwerp — as of 14/06/2026</div>
+    <div class="tw"><table><thead><tr><th>SOW</th><th>NOS</th><th>Length (mm)</th></tr></thead>
+    <tbody><tr class="rh"><td>100</td><td>50</td><td>617951</td></tr>
+<tr><td>1</td><td>25</td><td>307887</td></tr>
+<tr><td>2</td><td>4</td><td>49911</td></tr>
+<tr><td>3</td><td>6</td><td>74437</td></tr>
+<tr><td>4</td><td>15</td><td>185716</td></tr>
+<tr class="rh"><td>400</td><td>173</td><td>2149622</td></tr>
+<tr><td>8</td><td>173</td><td>2149622</td></tr>
+<tr class="rh"><td>500</td><td>316</td><td>3919502</td></tr>
+<tr><td>9</td><td>11</td><td>136535</td></tr>
+<tr><td>10</td><td>217</td><td>2690677</td></tr>
+<tr><td>11</td><td>88</td><td>1092290</td></tr>
+<tr class="rh"><td>600</td><td>124</td><td>1533600</td></tr>
+<tr><td>12</td><td>10</td><td>124460</td></tr>
+<tr><td>13</td><td>18</td><td>222677</td></tr>
+<tr><td>14</td><td>96</td><td>1186463</td></tr>
+<tr class="rh"><td>Total</td><td>663</td><td>8220675</td></tr>
+</tbody></table></div>
+  </div>
+</div>
+
+<!-- WEEKLY ACTIVITIES -->
+<div id="activities" class="section">
+  <div class="card">
+    <div class="ct"><i class="ti ti-calendar-event"></i>Activities — 08 to 14 June 2026</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:12px">ITP: 5129_20-4600015016-00054 Rev.06 AFC</div>
+    <div class="arow">
+  <span class="adate">08/06/2026</span>
+  <span class="aitp">Pos. FR-374</span>
+  <span class="sdot"></span>
+  <span class="adesc">6</span>
+  <span class="anote">Various plates – Item 45650-00400-01 (VoestAlpine)</span>
+</div>
+<div class="arow">
+  <span class="adate">08/06/2026</span>
+  <span class="aitp">Pos. FR-374</span>
+  <span class="sdot"></span>
+  <span class="adesc">7</span>
+  <span class="anote">–</span>
+</div>
+<div class="arow">
+  <span class="adate">08/06/2026</span>
+  <span class="aitp">Pos. FR-374</span>
+  <span class="sdot"></span>
+  <span class="adesc">9</span>
+  <span class="anote">45650-00400-2196, -2192</span>
+</div>
+<div class="arow">
+  <span class="adate">08/06/2026</span>
+  <span class="aitp">Pos. FR-374</span>
+  <span class="sdot"></span>
+  <span class="adesc">10</span>
+  <span class="anote">45650-00400-2198</span>
+</div>
+<div class="arow">
+  <span class="adate">08/06/2026</span>
+  <span class="aitp">Pos. FR-374</span>
+  <span class="sdot"></span>
+  <span class="adesc">11</span>
+  <span class="anote">45650-00400-2074, -2058</span>
+</div>
+<div class="arow">
+  <span class="adate">08/06/2026</span>
+  <span class="aitp">Pos. FR-374</span>
+  <span class="sdot"></span>
+  <span class="adesc">12</span>
+  <span class="anote">45650-00400-2128, -2080</span>
+</div>
+<div class="arow">
+  <span class="adate">08/06/2026</span>
+  <span class="aitp">Pos. FR-374</span>
+  <span class="sdot"></span>
+  <span class="adesc">13.1</span>
+  <span class="anote">45650-00400-2043, -2087</span>
+</div>
+<div class="arow">
+  <span class="adate">08/06/2026</span>
+  <span class="aitp">Pos. FR-374</span>
+  <span class="sdot"></span>
+  <span class="adesc">13.2</span>
+  <span class="anote">45650-00400-2174, -2160</span>
+</div>
+<div class="arow">
+  <span class="adate">08/06/2026</span>
+  <span class="aitp">Pos. FR-374</span>
+  <span class="sdot"></span>
+  <span class="adesc">17</span>
+  <span class="anote">45650-00400-2129, -2161, -2130</span>
+</div>
+<div class="arow">
+  <span class="adate">08/06/2026</span>
+  <span class="aitp">Pos. FR-374</span>
+  <span class="sdot"></span>
+  <span class="adesc">23</span>
+  <span class="anote">45650-00400-2123</span>
+</div>
+<div class="arow">
+  <span class="adate">08/06/2026</span>
+  <span class="aitp">Pos. FR-374</span>
+  <span class="sdot"></span>
+  <span class="adesc">38</span>
+  <span class="anote">45650-00400-2033</span>
+</div>
+<div class="arow">
+  <span class="adate">08/06/2026</span>
+  <span class="aitp">Pos. FR-374</span>
+  <span class="sdot"></span>
+  <span class="adesc">41</span>
+  <span class="anote">TL-FI-400-131 · 15 pipes · 186,205 mm</span>
+</div>
+<div class="arow">
+  <span class="adate">09/06/2026</span>
+  <span class="aitp">Pos. FR-375</span>
+  <span class="sdot"></span>
+  <span class="adesc">6</span>
+  <span class="anote">Various plates – Item 45650-00400-01 (VoestAlpine)</span>
+</div>
+<div class="arow">
+  <span class="adate">09/06/2026</span>
+  <span class="aitp">Pos. FR-375</span>
+  <span class="sdot"></span>
+  <span class="adesc">7</span>
+  <span class="anote">45650-00400-2237, -2243</span>
+</div>
+<div class="arow">
+  <span class="adate">09/06/2026</span>
+  <span class="aitp">Pos. FR-375</span>
+  <span class="sdot"></span>
+  <span class="adesc">8</span>
+  <span class="anote">45650-00400-2237, -2243</span>
+</div>
+<div class="arow">
+  <span class="adate">09/06/2026</span>
+  <span class="aitp">Pos. FR-375</span>
+  <span class="sdot"></span>
+  <span class="adesc">9</span>
+  <span class="anote">45650-00400-2224, -2240</span>
+</div>
+<div class="arow">
+  <span class="adate">09/06/2026</span>
+  <span class="aitp">Pos. FR-375</span>
+  <span class="sdot"></span>
+  <span class="adesc">10</span>
+  <span class="anote">45650-00400-2224, -2089 (mech. test)</span>
+</div>
+<div class="arow">
+  <span class="adate">09/06/2026</span>
+  <span class="aitp">Pos. FR-375</span>
+  <span class="sdot"></span>
+  <span class="adesc">11</span>
+  <span class="anote">45650-00400-2193, -2069</span>
+</div>
+<div class="arow">
+  <span class="adate">09/06/2026</span>
+  <span class="aitp">Pos. FR-375</span>
+  <span class="sdot"></span>
+  <span class="adesc">12</span>
+  <span class="anote">45650-00400-2217, -2192</span>
+</div>
+<div class="arow">
+  <span class="adate">09/06/2026</span>
+  <span class="aitp">Pos. FR-375</span>
+  <span class="sdot"></span>
+  <span class="adesc">13.1</span>
+  <span class="anote">45650-00400-2127, -2103</span>
+</div>
+<div class="arow">
+  <span class="adate">09/06/2026</span>
+  <span class="aitp">Pos. FR-375</span>
+  <span class="sdot"></span>
+  <span class="adesc">13.2</span>
+  <span class="anote">45650-00400-2195, -2216</span>
+</div>
+<div class="arow">
+  <span class="adate">09/06/2026</span>
+  <span class="aitp">Pos. FR-375</span>
+  <span class="sdot"></span>
+  <span class="adesc">17</span>
+  <span class="anote">45650-00400-2126, -2132</span>
+</div>
+<div class="arow">
+  <span class="adate">09/06/2026</span>
+  <span class="aitp">Pos. FR-375</span>
+  <span class="sdot"></span>
+  <span class="adesc">22</span>
+  <span class="anote">Sample NO557 – pipe 45650-00400-1997; CS heat 782081; CRA heat 060261</span>
+</div>
+<div class="arow">
+  <span class="adate">09/06/2026</span>
+  <span class="aitp">Pos. FR-375</span>
+  <span class="sdot"></span>
+  <span class="adesc">23</span>
+  <span class="anote">45650-00400-2147, -2043</span>
+</div>
+<div class="arow">
+  <span class="adate">09/06/2026</span>
+  <span class="aitp">Pos. FR-375</span>
+  <span class="sdot"></span>
+  <span class="adesc">41</span>
+  <span class="anote">TL-FI-400-132 · 6 pipes · 73,880 mm</span>
+</div>
+<div class="arow">
+  <span class="adate">10/06/2026</span>
+  <span class="aitp">Pos. FR-376</span>
+  <span class="sdot"></span>
+  <span class="adesc">6</span>
+  <span class="anote">Various plates (VoestAlpine)</span>
+</div>
+<div class="arow">
+  <span class="adate">10/06/2026</span>
+  <span class="aitp">Pos. FR-376</span>
+  <span class="sdot"></span>
+  <span class="adesc">7</span>
+  <span class="anote">45650-00400-2269</span>
+</div>
+<div class="arow">
+  <span class="adate">10/06/2026</span>
+  <span class="aitp">Pos. FR-376</span>
+  <span class="sdot"></span>
+  <span class="adesc">8</span>
+  <span class="anote">45650-00400-2269</span>
+</div>
+<div class="arow">
+  <span class="adate">10/06/2026</span>
+  <span class="aitp">Pos. FR-376</span>
+  <span class="sdot"></span>
+  <span class="adesc">9</span>
+  <span class="anote">45650-00400-2260, -2257</span>
+</div>
+<div class="arow">
+  <span class="adate">10/06/2026</span>
+  <span class="aitp">Pos. FR-376</span>
+  <span class="sdot"></span>
+  <span class="adesc">11</span>
+  <span class="anote">45650-00400-2219, -2003</span>
+</div>
+<div class="arow">
+  <span class="adate">10/06/2026</span>
+  <span class="aitp">Pos. FR-376</span>
+  <span class="sdot"></span>
+  <span class="adesc">12</span>
+  <span class="anote">45650-00400-2244, -2098</span>
+</div>
+<div class="arow">
+  <span class="adate">10/06/2026</span>
+  <span class="aitp">Pos. FR-376</span>
+  <span class="sdot"></span>
+  <span class="adesc">13.1</span>
+  <span class="anote">45650-00400-2036, -1998</span>
+</div>
+<div class="arow">
+  <span class="adate">10/06/2026</span>
+  <span class="aitp">Pos. FR-376</span>
+  <span class="sdot"></span>
+  <span class="adesc">13.2</span>
+  <span class="anote">45650-00400-2251, -2089</span>
+</div>
+<div class="arow">
+  <span class="adate">10/06/2026</span>
+  <span class="aitp">Pos. FR-376</span>
+  <span class="sdot"></span>
+  <span class="adesc">17</span>
+  <span class="anote">45650-00400-2236, -2259, -2036, -2069</span>
+</div>
+<div class="arow">
+  <span class="adate">10/06/2026</span>
+  <span class="aitp">Pos. FR-376</span>
+  <span class="sdot"></span>
+  <span class="adesc">22</span>
+  <span class="anote">Sample NO604 – pipe 45650-00400-2127; plate 162641; CS heat 784636; CRA heat 060578</span>
+</div>
+<div class="arow">
+  <span class="adate">10/06/2026</span>
+  <span class="aitp">Pos. FR-376</span>
+  <span class="sdot"></span>
+  <span class="adesc">23</span>
+  <span class="anote">45650-00400-2148, -2084</span>
+</div>
+<div class="arow">
+  <span class="adate">10/06/2026</span>
+  <span class="aitp">Pos. FR-376</span>
+  <span class="sdot"></span>
+  <span class="adesc">33</span>
+  <span class="anote">45650-00400-2126, -2161, -2171, -2051</span>
+</div>
+<div class="arow">
+  <span class="adate">10/06/2026</span>
+  <span class="aitp">Pos. FR-376</span>
+  <span class="sdot"></span>
+  <span class="adesc">41</span>
+  <span class="anote">TL-FI-400-133 · 9 pipes · 112,215 mm</span>
+</div>
+<div class="arow">
+  <span class="adate">11/06/2026</span>
+  <span class="aitp">Pos. FR-377</span>
+  <span class="sdot"></span>
+  <span class="adesc">6</span>
+  <span class="anote">Various plates (VoestAlpine)</span>
+</div>
+<div class="arow">
+  <span class="adate">11/06/2026</span>
+  <span class="aitp">Pos. FR-377</span>
+  <span class="sdot"></span>
+  <span class="adesc">7</span>
+  <span class="anote">45650-00400-2282, -2288</span>
+</div>
+<div class="arow">
+  <span class="adate">11/06/2026</span>
+  <span class="aitp">Pos. FR-377</span>
+  <span class="sdot"></span>
+  <span class="adesc">8</span>
+  <span class="anote">45650-00400-2282, -2288</span>
+</div>
+<div class="arow">
+  <span class="adate">11/06/2026</span>
+  <span class="aitp">Pos. FR-377</span>
+  <span class="sdot"></span>
+  <span class="adesc">11</span>
+  <span class="anote">45650-00400-2252</span>
+</div>
+<div class="arow">
+  <span class="adate">11/06/2026</span>
+  <span class="aitp">Pos. FR-377</span>
+  <span class="sdot"></span>
+  <span class="adesc">12</span>
+  <span class="anote">45650-00400-2275, -2250, -2276</span>
+</div>
+<div class="arow">
+  <span class="adate">11/06/2026</span>
+  <span class="aitp">Pos. FR-377</span>
+  <span class="sdot"></span>
+  <span class="adesc">13.1</span>
+  <span class="anote">45650-00400-2204, -2274, -2272</span>
+</div>
+<div class="arow">
+  <span class="adate">11/06/2026</span>
+  <span class="aitp">Pos. FR-377</span>
+  <span class="sdot"></span>
+  <span class="adesc">13.2</span>
+  <span class="anote">45650-00400-2202, -2273, -2249</span>
+</div>
+<div class="arow">
+  <span class="adate">11/06/2026</span>
+  <span class="aitp">Pos. FR-377</span>
+  <span class="sdot"></span>
+  <span class="adesc">17</span>
+  <span class="anote">45650-00400-2257, -2203, -2201, -2279</span>
+</div>
+<div class="arow">
+  <span class="adate">11/06/2026</span>
+  <span class="aitp">Pos. FR-377</span>
+  <span class="sdot"></span>
+  <span class="adesc">22</span>
+  <span class="anote">Pipe 45650-00400-2000, Sample N0556; plate 154942; CS heat 977471; CRA heat 060482</span>
+</div>
+<div class="arow">
+  <span class="adate">11/06/2026</span>
+  <span class="aitp">Pos. FR-377</span>
+  <span class="sdot"></span>
+  <span class="adesc">23</span>
+  <span class="anote">45650-00400-1994</span>
+</div>
+<div class="arow">
+  <span class="adate">11/06/2026</span>
+  <span class="aitp">Pos. FR-377</span>
+  <span class="sdot"></span>
+  <span class="adesc">35</span>
+  <span class="anote">45650-00400-2147</span>
+</div>
+<div class="arow">
+  <span class="adate">11/06/2026</span>
+  <span class="aitp">Pos. FR-377</span>
+  <span class="sdot"></span>
+  <span class="adesc">38</span>
+  <span class="anote">45650-00400-2123, -2146</span>
+</div>
+<div class="arow">
+  <span class="adate">11/06/2026</span>
+  <span class="aitp">Pos. FR-377</span>
+  <span class="sdot"></span>
+  <span class="adesc">41</span>
+  <span class="anote">TL-FI-400-134 · 10 pipes · 123,612 mm</span>
+</div>
+<div class="arow">
+  <span class="adate">12/06/2026</span>
+  <span class="aitp">Pos. FR-378</span>
+  <span class="sdot"></span>
+  <span class="adesc">6</span>
+  <span class="anote">Various plates (VoestAlpine)</span>
+</div>
+<div class="arow">
+  <span class="adate">12/06/2026</span>
+  <span class="aitp">Pos. FR-378</span>
+  <span class="sdot"></span>
+  <span class="adesc">7</span>
+  <span class="anote">45650-00400-2303, -2307</span>
+</div>
+<div class="arow">
+  <span class="adate">12/06/2026</span>
+  <span class="aitp">Pos. FR-378</span>
+  <span class="sdot"></span>
+  <span class="adesc">8</span>
+  <span class="anote">45650-00400-2303, -2307</span>
+</div>
+<div class="arow">
+  <span class="adate">12/06/2026</span>
+  <span class="aitp">Pos. FR-378</span>
+  <span class="sdot"></span>
+  <span class="adesc">9</span>
+  <span class="anote">45650-00400-2306</span>
+</div>
+<div class="arow">
+  <span class="adate">12/06/2026</span>
+  <span class="aitp">Pos. FR-378</span>
+  <span class="sdot"></span>
+  <span class="adesc">11</span>
+  <span class="anote">45650-00400-2115, -2294</span>
+</div>
+<div class="arow">
+  <span class="adate">12/06/2026</span>
+  <span class="aitp">Pos. FR-378</span>
+  <span class="sdot"></span>
+  <span class="adesc">12</span>
+  <span class="anote">45650-00400-2111, -2124, -2295</span>
+</div>
+<div class="arow">
+  <span class="adate">12/06/2026</span>
+  <span class="aitp">Pos. FR-378</span>
+  <span class="sdot"></span>
+  <span class="adesc">13.1</span>
+  <span class="anote">45650-00400-2297, -2112</span>
+</div>
+<div class="arow">
+  <span class="adate">12/06/2026</span>
+  <span class="aitp">Pos. FR-378</span>
+  <span class="sdot"></span>
+  <span class="adesc">13.2</span>
+  <span class="anote">45650-00400-2110, -2111</span>
+</div>
+<div class="arow">
+  <span class="adate">12/06/2026</span>
+  <span class="aitp">Pos. FR-378</span>
+  <span class="sdot"></span>
+  <span class="adesc">17</span>
+  <span class="anote">45650-00400-2114, -2109, -2300</span>
+</div>
+<div class="arow">
+  <span class="adate">12/06/2026</span>
+  <span class="aitp">Pos. FR-378</span>
+  <span class="sdot"></span>
+  <span class="adesc">22</span>
+  <span class="anote">Pipe 45650-00400-1996, Sample N541; plate 161208; CS heat 782081; CRA heat 060325</span>
+</div>
+<div class="arow">
+  <span class="adate">12/06/2026</span>
+  <span class="aitp">Pos. FR-378</span>
+  <span class="sdot"></span>
+  <span class="adesc">23</span>
+  <span class="anote">45650-00400-2275, -2125, -2276</span>
+</div>
+<div class="arow">
+  <span class="adate">12/06/2026</span>
+  <span class="aitp">Pos. FR-378</span>
+  <span class="sdot"></span>
+  <span class="adesc">36</span>
+  <span class="anote">45650-00400-2132</span>
+</div>
+<div class="arow">
+  <span class="adate">12/06/2026</span>
+  <span class="aitp">Pos. FR-378</span>
+  <span class="sdot"></span>
+  <span class="adesc">41</span>
+  <span class="anote">TL-FI-400-135 · 15 pipes · 186,166 mm</span>
+</div>
+<div class="arow">
+  <span class="adate">13/06/2026</span>
+  <span class="aitp">Pos. FR-379</span>
+  <span class="sdot"></span>
+  <span class="adesc">9</span>
+  <span class="anote">45650-00400-2306</span>
+</div>
+<div class="arow">
+  <span class="adate">13/06/2026</span>
+  <span class="aitp">Pos. FR-379</span>
+  <span class="sdot"></span>
+  <span class="adesc">17</span>
+  <span class="anote">45650-00400-2114, -2109, -2300</span>
+</div>
+<div class="arow">
+  <span class="adate">13/06/2026</span>
+  <span class="aitp">Pos. FR-379</span>
+  <span class="sdot"></span>
+  <span class="adesc">35</span>
+  <span class="anote">45650-00400-2279, -2005, -2132</span>
+</div>
+
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-clipboard-list"></i>Tally Lists — Weekly Summary</div>
+    <div class="tw"><table><thead><tr>
+      <th>Date</th><th>Tally List No.</th><th>Item</th><th>Qty (pipes)</th>
+      <th>Length (mm)</th><th>Saipem / QE Item</th><th>Remarks</th>
+    </tr></thead><tbody><tr>
+  <td>08/06/2026</td><td class="mono">TL-FI-400-131</td>
+  <td>400</td><td><strong>15</strong></td>
+  <td>186205</td><td>8 / B.7-1</td>
+  <td style="font-size:11px">Final Inspection by QatarEnergy &amp; SAIPEM; visual inspection satisfactory</td>
+</tr>
+<tr>
+  <td>09/06/2026</td><td class="mono">TL-FI-400-132</td>
+  <td>400</td><td><strong>6</strong></td>
+  <td>73880</td><td>8 / B.7-1</td>
+  <td style="font-size:11px">Final Inspection by QatarEnergy &amp; SAIPEM; visual inspection satisfactory</td>
+</tr>
+<tr>
+  <td>10/06/2026</td><td class="mono">TL-FI-400-133</td>
+  <td>400</td><td><strong>9</strong></td>
+  <td>112215</td><td>8 / B.7-1</td>
+  <td style="font-size:11px">Final Inspection by QatarEnergy &amp; SAIPEM; visual inspection satisfactory</td>
+</tr>
+<tr>
+  <td>11/06/2026</td><td class="mono">TL-FI-400-134</td>
+  <td>400</td><td><strong>10</strong></td>
+  <td>123612</td><td>8 / B.7-1</td>
+  <td style="font-size:11px">Final Inspection by QatarEnergy &amp; SAIPEM; visual inspection satisfactory</td>
+</tr>
+<tr>
+  <td>12/06/2026</td><td class="mono">TL-FI-400-135</td>
+  <td>400</td><td><strong>15</strong></td>
+  <td>186166</td><td>8 / B.7-1</td>
+  <td style="font-size:11px">Final Inspection by QatarEnergy &amp; SAIPEM; visual inspection satisfactory</td>
+</tr>
+<tr>
+  <td>13/06/2026</td><td class="mono">–</td>
+  <td>No Final Inspection activity reported</td><td><strong></strong></td>
+  <td></td><td></td>
+  <td style="font-size:11px"></td>
+</tr>
+<tr class="rh">
+  <td colspan="3">Total</td><td><strong>682078</strong></td>
+  <td></td><td colspan="2"></td>
+</tr>
+</tbody></table></div>
+  </div>
+</div>
+
+<!-- VAGB PLATES -->
+<div id="plates" class="section">
+  <div class="kpi-grid">
+    <div class="kpi kb"><div class="kl">Plates at EEW</div><div class="kv">3.986</div><div class="ks">of 4.502 ordered</div></div>
+    <div class="kpi kg"><div class="kl">Delivery rate</div><div class="kv">88,54%</div><div class="ks">delta -11,46%</div></div>
+    <div class="kpi kr"><div class="kl">Plates pending</div><div class="kv">—</div><div class="ks">to complete PO</div></div>
+    <div class="kpi kw"><div class="kl">Est. delay</div><div class="kv">~2 wks</div><div class="ks">vs schedule</div></div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-calendar"></i>Delivery schedule</div>
+    <table><thead><tr><th>CW</th><th>Planned</th><th>Schedule</th><th>Received</th></tr></thead>
+    <tbody></tbody></table>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-table"></i>Material delivery summary — as of 14.06.2026</div>
+    <div class="tw"><table><thead><tr><th>Item</th><th>Total</th><th>Delivered</th><th>Pending</th><th>Ordered</th><th>Del %</th><th>First arrival</th><th>Last arrival</th></tr></thead>
+    <tbody></tbody></table></div>
+  </div>
+</div>
+
+<!-- IRN / NCR -->
+<div id="irns" class="section">
+  <div class="two">
+    <div class="card">
+      <div class="ct"><i class="ti ti-x"></i>NCR — all closed</div>
+      <div class="crow"><span class="clabel"><span class="mono">NCR-0001</span> CTOD failure EEW Item 601</span><span class="pill pg">Closed</span></div>
+      <div class="crow"><span class="clabel"><span class="mono">NCR-0002</span> CTOD failure EEW Item 301</span><span class="pill pg">Closed</span></div>
+      <div class="crow"><span class="clabel"><span class="mono">NCR-0003</span> Slag inclusions EEW Item 701</span><span class="pill pg">Closed</span></div>
+      <div class="crow"><span class="clabel"><span class="mono">NCR-0004</span> Mechanical damage</span><span class="pill pg">Closed</span></div>
+      <div class="crow"><span class="clabel"><span class="mono">NCR-0005</span> Corrosion test ASTM G28-02</span><span class="pill pg">Closed</span></div>
+      <div class="crow"><span class="clabel"><span class="mono">NCR-0010</span> Burn-through MPQT Item 300</span><span class="pill pg">Closed</span></div>
+      <div class="crow"><span class="clabel"><span class="mono">NCR-0011</span> Corrosion test ASTM G48-02</span><span class="pill pg">Closed</span></div>
+      <div class="crow"><span class="clabel"><span class="mono">NCR-0012</span> CTOD failure MPQT Item 300</span><span class="pill pg">Closed</span></div>
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-alert-circle"></i>Open items</div>
+      <div class="crow"><span class="clabel"><span class="mono">COMP3-1506050-PL-00001</span><br><small style="color:var(--text3)">Issued with IRN-00002</small></span><span class="pill pr">OPEN</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-file-description"></i>IRN register — PO 1506050</div>
+    <div class="irn-list">
+      <div class="irn-row"><span class="irn-id">IRN-00001 to 00027</span><span class="irn-desc">CoC D01–D23 · May–Dec 2025</span><span class="pill pg">Issued</span></div>
+      <div class="irn-row"><span class="irn-id">IRN-00028 to 00059</span><span class="irn-desc">CoC E01–E10 · Jan–Mar 2026</span><span class="pill pg">Issued</span></div>
+      <div class="irn-row"><span class="irn-id">IRN-00060 to 00075</span><span class="irn-desc">CoC E11–C01 · Mar–Apr 2026</span><span class="pill pg">Issued</span></div>
+      <div class="irn-row"><span class="irn-id">IRN-00076</span><span class="irn-desc">CoC D26 · 131 pipes Item 00400</span><span class="pill pg">Issued</span></div>
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-top:8px">76 IRNs issued · PO 1519921: 2 IRNs · PL-00001: OPEN</div>
+  </div>
+</div>
+
+<!-- ITP DOCUMENTS -->
+<div id="docs" class="section">
+  <div class="card">
+    <div class="ct"><i class="ti ti-folder"></i>Key documents — status summary</div>
+    <table><thead><tr><th>Doc. No.</th><th>Title</th><th>Rev.</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">-00054</td><td>ITP for Production</td><td>06</td><td><span class="pill pg">AFC</span></td></tr>
+      <tr><td class="mono">-00058/60/61/65/97</td><td>WPS 45650 1A / 1C / 2A / 3B / 2B</td><td>var.</td><td><span class="pill pg">AFC</span></td></tr>
+      <tr><td class="mono">-00031 to 00042</td><td>HST / VT / AUT / RT / MT / PT / Pickling / Marking / Handling / Forming</td><td>var.</td><td><span class="pill pg">AFC</span></td></tr>
+      <tr><td class="mono">-00005/06/07</td><td>Dimensional control / UT Procedure Alloy 625 &amp; 825</td><td>C</td><td><span class="pill pb">IFA</span></td></tr>
+      <tr><td class="mono">-00019/23/25/59</td><td>Records Book / Calibration / PMI / WPS 1B</td><td>var.</td><td><span class="pill pa">IFR</span></td></tr>
+      <tr><td class="mono">-00044/22</td><td>MPQT Report / Quality Manual</td><td>—</td><td><span class="pill pr">Not sent</span></td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- PHOTOS -->
+<div id="photos" class="section">
+  <div class="alert ai">Photography inside test houses is strictly forbidden.</div>
+  <div class="card">
+  <div class="ct"><i class="ti ti-photo"></i>ITP Step Other</div>
+  <div class="photo-grid" id="pg-stepOther"></div>
+</div>
+
+  <div class="card">
+    <div class="ct"><i class="ti ti-paperclip"></i>IR enclosures</div>
+    <div class="crow">
+  <span style="font-family:var(--mono);font-size:10px;color:var(--text3);min-width:20px">1</span>
+  <span class="clabel">COMP3B EEW PO 1506050  Overall Status as of 13.06.2026 Quick Overview</span>
+  <span class="pill pgr">.pdf</span>
+</div>
+<div class="crow">
+  <span style="font-family:var(--mono);font-size:10px;color:var(--text3);min-width:20px">2</span>
+  <span class="clabel">EEW PLATES STATUS 12.06.2026</span>
+  <span class="pill pgr">.xlsx</span>
+</div>
+<div class="crow">
+  <span style="font-family:var(--mono);font-size:10px;color:var(--text3);min-width:20px">3</span>
+  <span class="clabel">SAIPEM 033764-SUO-NCR-015 dtd. 28.05.2026</span>
+  <span class="pill pgr">.html</span>
+</div>
+<div class="crow">
+  <span style="font-family:var(--mono);font-size:10px;color:var(--text3);min-width:20px">4</span>
+  <span class="clabel">Truck_fire_IQS</span>
+  <span class="pill pgr">.pdf</span>
+</div>
+<div class="crow">
+  <span style="font-family:var(--mono);font-size:10px;color:var(--text3);min-width:20px">5</span>
+  <span class="clabel">Visitor-Walkways_06-2026</span>
+  <span class="pill pgr">.pdf</span>
+</div>
+
+  </div>
+</div>
+
+<!-- HSE / AOB -->
+<div id="hse" class="section">
+  <div class="card">
+    <div class="ct"><i class="ti ti-shield"></i>HSE checklist — 08 to 14 June 2026</div>
+    <div class="crow"><span class="clabel">1. Complete Safety Induction has been provided at site?</span><span class="pill pg">Yes</span></div>
+<div class="crow"><span class="clabel">2. All the people involved in the production &amp; testing area wear adequate PPE?</span><span class="pill pg">Yes</span></div>
+<div class="crow"><span class="clabel">3. There have been HSE incidents during this period?</span><span class="pill pg">Yes</span></div>
+<div class="crow"><span class="clabel">4. There are issues about HSE Procedures, HSE warnings</span><span class="pill pg">Yes</span></div>
+
+    <div style="margin-top:10px" class="alert ag">No HSE issues this inspection visit/period. Nothing to report.</div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-alert-triangle"></i>Areas of concern</div>
+    <div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">2.  RELEASE OF LINE PIPES (EEW - LINE PIPES)</div>
+<div style="font-size:12px;line-height:1.8;color:var(--text2);margin-bottom:14px">
+<div style="display:flex;gap:8px;margin-bottom:4px"><span class="dot da" style="margin-top:7px"></span><span>Concern: Although the project is steadily progressing towards its final stages, the overall execution rate has slowed down significantly compared to previous months.</span></div>
+<div style="display:flex;gap:8px;margin-bottom:4px"><span class="dot da" style="margin-top:7px"></span><span>Impact: The timely release of the remaining line pipes is critical for the final construction phases of the offshore riser platforms and pipelines. Any further delay in these last releases could halt subsequent downstream activities, such as final welding, coating, and pipeline assembly.</span></div>
+<div style="display:flex;gap:8px;margin-bottom:4px"><span class="dot db" style="margin-top:7px"></span><span>Current Status: The current release rate is in accordance with production, with an average discrepancy of 5% for the pipes inspected and released against the PO.</span></div>
+<div style="display:flex;gap:8px;margin-bottom:4px"><span class="dot dg" style="margin-top:7px"></span><span>Timeline: Regarding the SAIPEM POs, Items 100/200/300/500/600/700/800 are complete, while Item 400 (1,775 pcs pending fabrication) is currently projected to reach fabrication completion on 20/11/2026. This introduces a 20-day slippage on the fabrication path against the original PO delivery date of 31/10/2026. However, IQS is monitoring the potential order closure dates based on the production trend derived from EEW's data over the last 15 days (see above).</span></div>
+<div style="display:flex;gap:8px;margin-bottom:4px"><span class="dot dg" style="margin-top:7px"></span><span>MPFB Delivery: Completed</span></div>
+<div style="display:flex;gap:8px;margin-bottom:4px"><span class="dot da" style="margin-top:7px"></span><span>Line Pipes: Production ongoing, at a very slow pace.</span></div>
+<div style="display:flex;gap:8px;margin-bottom:4px"><span class="dot db" style="margin-top:7px"></span><span>For a detailed interactive view of this report, open the HTML dashboard:</span></div>
+<div style="display:flex;gap:8px;margin-bottom:4px"><span class="dot db" style="margin-top:7px"></span><span>IQS srl
+Worldwide Inspection Company</span></div>
+<div style="display:flex;gap:8px;margin-bottom:4px"><span class="dot db" style="margin-top:7px"></span><span>Registered Office</span></div>
+<div style="display:flex;gap:8px;margin-bottom:4px"><span class="dot db" style="margin-top:7px"></span><span>Address: Via Trieste 16/A, 20097
+S. Donato M.se, MI, Italy</span></div>
+<div style="display:flex;gap:8px;margin-bottom:4px"><span class="dot db" style="margin-top:7px"></span><span>Corporate Operative Office</span></div>
+<div style="display:flex;gap:8px;margin-bottom:4px"><span class="dot db" style="margin-top:7px"></span><span>Address: Via Europa 42, 20097
+S. Donato M.se, MI, Italy</span></div>
+<div style="display:flex;gap:8px;margin-bottom:4px"><span class="dot db" style="margin-top:7px"></span><span>Order 45650 · NFPS COMP3b</span></div>
+<div style="display:flex;gap:8px;margin-bottom:4px"><span class="dot db" style="margin-top:7px"></span><span>https://fanatics-hue.github.io/eew-comp3b-reports/</span></div>
+<div style="display:flex;gap:8px;margin-bottom:4px"><span class="dot db" style="margin-top:7px"></span><span>IR Distribution (by PQC-Project’s Coordinator):</span></div>
+</div>
+<div class="sep"></div>
+
+  </div>
+</div>
+
+<!-- CONTACTS -->
+<div id="contacts" class="section">
+  <div class="two">
+    <div class="card">
+      <div class="ct"><i class="ti ti-users"></i>IQS / Saipem</div>
+      <div class="prow"><div class="av avb">MG</div><div class="pi"><div class="pn">Mr. Gregorio Muci</div><div class="pr2">IQS srl Project Plant Lead obo SAIPEM</div><div style="font-size:10px;color:var(--text3)">g.muci@iqs-ww.com</div></div></div>
+<div class="prow"><div class="av avb">MV</div><div class="pi"><div class="pn">Mr. Vito Mangiulli</div><div class="pr2">IQS srl Inspector obo SAIPEM</div><div style="font-size:10px;color:var(--text3)">v.mangiulli@iqs-ww.com</div></div></div>
+<div class="prow"><div class="av avb">MP</div><div class="pi"><div class="pn">Mr. Pierfrancesco Nitti</div><div class="pr2">IQS srl Inspector obo SAIPEM</div><div style="font-size:10px;color:var(--text3)">pierfrancesco.nitti@gmail.com</div></div></div>
+<div class="prow"><div class="av avb">MD</div><div class="pi"><div class="pn">Mr. Donato Salamida</div><div class="pr2">IQS srl Inspector obo SAIPEM</div><div style="font-size:10px;color:var(--text3)">donato53d@libero.it</div></div></div>
+<div class="prow"><div class="av avb">MM</div><div class="pi"><div class="pn">Mr. Mimmo Sammarco</div><div class="pr2">IQS srl Inspector obo SAIPEM</div><div style="font-size:10px;color:var(--text3)">mimmosam0@libero.it</div></div></div>
+
+    </div>
+    <div class="card">
+      <div class="ct"><i class="ti ti-building"></i>Sumitomo / QE LNG / TPIA</div>
+      <div class="prow"><div class="av avp">MM</div><div class="pi"><div class="pn">Ms. Maria de la Ossa</div><div class="pr2">Project Manager</div><div style="font-size:10px;color:var(--text3)">maria-a.delaossa@sumitomocorp.com</div></div></div>
+<div class="prow"><div class="av avp">MS</div><div class="pi"><div class="pn">Ms. Saiko Tsuji</div><div class="pr2">Project Assistant &amp; Document Controller</div><div style="font-size:10px;color:var(--text3)">saiko.tsuji@sumitomocorp.com</div></div></div>
+<div class="prow"><div class="av avt">MS</div><div class="pi"><div class="pn">Mr. Syed Hassan</div><div class="pr2">TPIA obo EEW/SUMITOMO</div><div style="font-size:10px;color:var(--text3)">hsyedosama@gmail.com</div></div></div>
+<div class="prow"><div class="av avt">MF</div><div class="pi"><div class="pn">Mr. Fijo Therattil</div><div class="pr2">TPIA obo EEW/SUMITOMO</div><div style="font-size:10px;color:var(--text3)">fijotherattil1992@gmail.com</div></div></div>
+<div class="prow"><div class="av ava">MM</div><div class="pi"><div class="pn">Mr. Massimo Stragapede</div><div class="pr2">QE LNG (QATAR ENERGIES) Representative</div><div style="font-size:10px;color:var(--text3)">massimo.stragapede@gmail.com</div></div></div>
+<div class="prow"><div class="av avt">MS</div><div class="pi"><div class="pn">Mr. Syed Hassan</div><div class="pr2">TPIA obo EEW/SUMITOMO</div><div style="font-size:10px;color:var(--text3)">hsyedosama@gmail.com</div></div></div>
+<div class="prow"><div class="av avt">MF</div><div class="pi"><div class="pn">Mr. Fijo Therattil</div><div class="pr2">TPIA obo EEW/SUMITOMO</div><div style="font-size:10px;color:var(--text3)">fijotherattil1992@gmail.com</div></div></div>
+
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-building-factory"></i>EEW Pipe Production Erndtebrück</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr">
+      <div><div class="prow"><div class="av avt">MS</div><div class="pi"><div class="pn">Mr. Sebastian Wilkes</div><div class="pr2">Head of Project &amp; Order Management</div><div style="font-size:10px;color:var(--text3)">Sebastian.Wilkes@eew-group.com</div></div></div>
+<div class="prow"><div class="av avt">MS</div><div class="pi"><div class="pn">Mr. Stefan Frank</div><div class="pr2">QC Inspector</div><div style="font-size:10px;color:var(--text3)">Stefan.Frank@eew-group.com</div></div></div>
+<div class="prow"><div class="av avt">MA</div><div class="pi"><div class="pn">Mr. Adriano Carvalho</div><div class="pr2">QC Inspector</div><div style="font-size:10px;color:var(--text3)">Adriano.Carvalho@eew-group.com</div></div></div>
+<div class="prow"><div class="av avt">ML</div><div class="pi"><div class="pn">Mr. L. Strauß</div><div class="pr2">QC Inspector</div><div style="font-size:10px;color:var(--text3)">Larissa.Strauss@eew-group.com</div></div></div>
+<div class="prow"><div class="av avt">MS</div><div class="pi"><div class="pn">Mr. Steffen Sheld</div><div class="pr2">Product Quality</div><div style="font-size:10px;color:var(--text3)">Steffen.Scheld@eew-group.com</div></div></div>
+<div class="prow"><div class="av avt">MA</div><div class="pi"><div class="pn">Mr. Artemij Miller</div><div class="pr2">Head of Welding Technology</div><div style="font-size:10px;color:var(--text3)">Artemij.Miller@eew-group.com</div></div></div>
+</div>
+      <div><div class="prow"><div class="av avt">MR</div><div class="pi"><div class="pn">Mr. R. Kuhles</div><div class="pr2">Quality Control/Quality Assurance</div><div style="font-size:10px;color:var(--text3)">Ruediger.Kuhles@eew-group.com</div></div></div>
+<div class="prow"><div class="av avt">MR</div><div class="pi"><div class="pn">Mr. Ruediger Wendel</div><div class="pr2">Quality Control/Quality Assurance</div><div style="font-size:10px;color:var(--text3)">Ruediger.Wendel@eew-group.com</div></div></div>
+<div class="prow"><div class="av avt">MT</div><div class="pi"><div class="pn">Mr. Tyler Hartman</div><div class="pr2">Head of Product Testing</div><div style="font-size:10px;color:var(--text3)">Tyler.Hartman@eew-group.com</div></div></div>
+<div class="prow"><div class="av avt">MS</div><div class="pi"><div class="pn">Mr. Syed Hassan</div><div class="pr2">TPIA obo EEW/SUMITOMO</div><div style="font-size:10px;color:var(--text3)">hsyedosama@gmail.com</div></div></div>
+<div class="prow"><div class="av avt">MF</div><div class="pi"><div class="pn">Mr. Fijo Therattil</div><div class="pr2">TPIA obo EEW/SUMITOMO</div><div style="font-size:10px;color:var(--text3)">fijotherattil1992@gmail.com</div></div></div>
+</div>
+    </div>
+  </div>
+</div>
+
+  </div>
+</div>
+
+<div id="lb" class="lb">
+  <button class="lb-close" id="lb-close">&times;</button>
+  <button class="lb-nav" id="lb-prev">&#8592;</button>
+  <img id="lb-img" src="" alt="">
+  <div id="lb-cap" class="lb-cap"></div>
+  <button class="lb-nav" id="lb-next">&#8594;</button>
+</div>
+
+<script>
+const TITLES={overview:'Overview',phases:'Production phases',dispatch:'Dispatch',
+  activities:'Weekly activities',plates:'VAGB plates',irns:'IRN / NCR',
+  docs:'ITP documents',photos:'Photos',hse:'HSE / AOB',contacts:'Contacts'};
+
+function nav(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('tb-title').textContent=TITLES[id]||id;
+  document.querySelector('.content').scrollTop=0;
+  closeSidebar();
+}
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sb-backdrop').classList.add('open');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sb-backdrop').classList.remove('open');}
+
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('hb-btn').addEventListener('click',openSidebar);
+  document.getElementById('sb-backdrop').addEventListener('click',closeSidebar);
+
+  // Phase bars
+  const phases=[
+];
+  const c=document.getElementById('phase-bars');
+  phases.forEach(p=>{
+    const pct=((p.done/p.total)*100).toFixed(1);
+    const r=document.createElement('div');r.className='ph-row';
+    r.innerHTML=`<span class="ph-name">${p.name}</span><div class="ph-track"><div class="ph-bar" style="width:0%"></div></div><span class="ph-pct">${pct}%</span><span class="ph-cnt">${p.done.toLocaleString()} / ${p.total.toLocaleString()}</span>`;
+    c.appendChild(r);
+    setTimeout(()=>r.querySelector('.ph-bar').style.width=pct+'%',100);
+  });
+
+  // Photos
+  const PHOTOS = [["Photo 1", "data:image/png;base64,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"]];
+  function mkCard(caption,src,idx){
+    const d=document.createElement('div');d.className='photo-card';
+    d.innerHTML=`<img class="photo-img" src="${src}" alt="${caption}" loading="lazy"><div class="photo-cap">${caption}</div>`;
+    d.querySelector('img').addEventListener('click',()=>openLB(idx));
+    return d;
+  }
+    const gOther=document.getElementById("pg-stepOther");
+  [0].forEach(i=>gOther&&gOther.appendChild(mkCard(PHOTOS[i][0],PHOTOS[i][1],i)));
+
+
+  // Lightbox
+  let _idx=0;
+  function openLB(idx){_idx=idx;updateLB();document.getElementById('lb').classList.add('open');}
+  function updateLB(){document.getElementById('lb-img').src=PHOTOS[_idx][1];document.getElementById('lb-cap').textContent=PHOTOS[_idx][0];}
+  document.getElementById('lb-close').onclick=()=>document.getElementById('lb').classList.remove('open');
+  document.getElementById('lb-prev').onclick=()=>{_idx=(_idx-1+PHOTOS.length)%PHOTOS.length;updateLB();};
+  document.getElementById('lb-next').onclick=()=>{_idx=(_idx+1)%PHOTOS.length;updateLB();};
+  document.getElementById('lb').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('open');});
+  document.addEventListener('keydown',e=>{
+    const lb=document.getElementById('lb');
+    if(!lb.classList.contains('open'))return;
+    if(e.key==='Escape')lb.classList.remove('open');
+    if(e.key==='ArrowLeft'){_idx=(_idx-1+PHOTOS.length)%PHOTOS.length;updateLB();}
+    if(e.key==='ArrowRight'){_idx=(_idx+1)%PHOTOS.length;updateLB();}
+  });
+});
+</script>
+</body>
+</html>
