@@ -38,17 +38,24 @@ class DocxParser:
     # ── helpers ───────────────────────────────────────────────────────────────
 
     def _tbl(self, idx):
-        """Restituisce tabella come lista di righe (lista di celle)."""
+        """Restituisce tabella come lista di righe (lista di celle).
+
+        Le celle unite (merge) vengono collassate per IDENTITÀ dell'elemento XML
+        (stesso <w:tc>), non per valore di testo: così due celle vuote distinte
+        restano due colonne separate e l'allineamento delle colonne è corretto.
+        """
         t = self.tables[idx]
         rows = []
-        seen = set()
         for row in t.rows:
-            cells = [c.text.strip() for c in row.cells]
-            # Deduplicazione celle merged
-            key = tuple(dict.fromkeys(cells))
-            if key not in seen:
-                seen.add(key)
-                rows.append(list(key))
+            out = []
+            seen = set()
+            for c in row.cells:
+                tc = id(c._tc)
+                if tc in seen:
+                    continue
+                seen.add(tc)
+                out.append(c.text.strip())
+            rows.append(out)
         return rows
 
     def _find_tbl(self, *keywords):
@@ -139,20 +146,16 @@ class DocxParser:
     def _parse_dispatch(self):
         d = self.data
 
-        # PO summary (tabella 9)
+        # PO summary (tabella 10) — niente riga "Total": i totali si sommano
         ti = self._find_tbl('SAIPEM PO','Pipes Released')
         if ti >= 0:
             rows = self._tbl(ti)
             po_data = []
+            tot_rel = tot_disp = tot_ready = 0
             for row in rows[1:]:
                 if row[0] in ('Total.','Total'):
-                    d['dispatch_total'] = {
-                        'released':   row[1] if len(row)>1 else '—',
-                        'length_mm':  row[2] if len(row)>2 else '—',
-                        'dispatched': row[3] if len(row)>3 else '—',
-                        'ready':      row[4] if len(row)>4 else '—',
-                    }
-                elif row[0].startswith('15'):
+                    continue
+                if row[0].startswith('15'):
                     po_data.append({
                         'po':         row[0],
                         'released':   row[1] if len(row)>1 else '—',
@@ -160,7 +163,16 @@ class DocxParser:
                         'dispatched': row[3] if len(row)>3 else '—',
                         'ready':      row[4] if len(row)>4 else '—',
                     })
+                    tot_rel   += int(self._num(row[1])) if len(row)>1 else 0
+                    tot_disp  += int(self._num(row[3])) if len(row)>3 else 0
+                    tot_ready += int(self._num(row[4])) if len(row)>4 else 0
             d['dispatch_po'] = po_data
+            d['dispatch_total'] = {
+                'released':   f"{tot_rel:,}".replace(',', '.'),
+                'length_mm':  '—',
+                'dispatched': f"{tot_disp:,}".replace(',', '.'),
+                'ready':      f"{tot_ready:,}".replace(',', '.'),
+            }
 
         # Dettaglio per categoria (tabella 10)
         ti2 = self._find_tbl('SAIPEM Pos','NOS Released','ACTUAL LENGTH')
@@ -184,14 +196,20 @@ class DocxParser:
                 antwerp.append({'sow': row[0], 'nos': row[1], 'length': row[2]})
             d['antwerp'] = antwerp
 
-        # Inspected (tabella 12)
+        # Inspected (tabella 9)
         ti4 = self._find_tbl('SAIPEM PO','INSPECTED','LENGTH')
         if ti4 >= 0:
             rows = self._tbl(ti4)
+            insp = []
             for row in rows[1:]:
                 if row[0] in ('Total.','Total'):
-                    d['inspected_total'] = row[1]
-                    d['inspected_length'] = row[2]
+                    d['inspected_total'] = row[1] if len(row)>1 else '—'
+                    d['inspected_length'] = row[2] if len(row)>2 else '—'
+                elif row[0].startswith('15'):
+                    insp.append({'po': row[0],
+                                 'nos': row[1] if len(row)>1 else '—',
+                                 'length': row[2] if len(row)>2 else '—'})
+            d['inspected_po'] = insp
 
     # ── parse fasi produzione (tabella 13) ───────────────────────────────────
 
@@ -256,20 +274,30 @@ class DocxParser:
     # ── parse attività settimanali (tabella 19) ──────────────────────────────
 
     def _parse_activities(self):
-        # Prova varianti header (il nome colonna cambia tra versioni del report)
-        ti = self._find_tbl('Date','ITP Pos.','Description')
+        # Colonne attuali: Date | FR No. | ITP Pos. | Activity Description | Pipe Nos | Result
+        ti = self._find_tbl('Date','ITP Pos','Activity Description')
         if ti < 0:
-            ti = self._find_tbl('Date','ITP Pos','Activity')
+            ti = self._find_tbl('Date','ITP Pos.','Description')
         if ti < 0:
             ti = self._find_tbl('Date','ITP','Description')
         if ti < 0: return
         rows = self._tbl(ti)
-        self.data['activities'] = [
-            {'date': r[0] if len(r)>0 else '', 'itp': r[1] if len(r)>1 else '',
-             'desc': r[2] if len(r)>2 else '',
-             'status': r[3] if len(r)>3 else '', 'notes': r[4] if len(r)>4 else ''}
-            for r in rows[1:] if r[0]
-        ]
+        last_date = ''
+        acts = []
+        for r in rows[1:]:
+            if len(r) < 4 or not r[2]:   # serve almeno l'ITP Pos.
+                continue
+            date = r[0] if len(r)>0 and r[0] else last_date
+            last_date = date
+            acts.append({
+                'date':   date,
+                'fr':     r[1] if len(r)>1 else '',
+                'itp':    r[2] if len(r)>2 else '',
+                'desc':   r[3] if len(r)>3 else '',
+                'pipes':  r[4] if len(r)>4 else '',
+                'result': r[5] if len(r)>5 else '',
+            })
+        self.data['activities'] = acts
 
     # ── parse VAGB plates (tabelle 20, 21, 22) ───────────────────────────────
 
@@ -463,6 +491,132 @@ class DocxParser:
                 break
         self.data['tally'] = tally
 
+    # ── parse completion forecast by item & phase (tabella 15) ────────────────
+
+    def _parse_forecast(self):
+        ti = self._find_tbl('Phase','Actual','Target','Est. Completion')
+        if ti < 0: return
+        rows = self._tbl(ti)
+        last_item = ''
+        out = []
+        for r in rows[1:]:
+            if len(r) < 5 or not r[1]:   # serve la fase
+                continue
+            item = r[0] if r[0] else last_item
+            last_item = item
+            out.append({
+                'item':   item,
+                'phase':  r[1],
+                'actual': r[2] if len(r)>2 else '',
+                'target': r[3] if len(r)>3 else '',
+                'remaining': r[4] if len(r)>4 else '',
+                'rate':   r[5] if len(r)>5 else '',
+                'prod7':  r[6] if len(r)>6 else '',
+                'rate_req_d': r[7] if len(r)>7 else '',
+                'est':    r[9] if len(r)>9 else '',
+                'po_date': r[10] if len(r)>10 else '',
+                'status': r[12] if len(r)>12 else (r[-1] if r else ''),
+            })
+        self.data['forecast'] = out
+
+    # ── parse confronto con data PO (tabella 17) ──────────────────────────────
+
+    def _parse_po_comparison(self):
+        ti = self._find_tbl('COMPARISON WITH PO COMPLETION DATE')
+        if ti < 0: return
+        rows = self._tbl(ti)
+        pairs = []
+        for r in rows[1:]:
+            if not r or 'COLOR LEGEND' in ' '.join(r).upper():
+                break
+            if len(r) >= 2 and r[0] and r[1]:
+                pairs.append((r[0], r[1]))
+        self.data['po_comparison'] = pairs
+
+    # ── parse produzione per periodo (tabelle 11 settimana, 12 mese) ──────────
+
+    def _parse_production(self):
+        tw = self._find_tbl('Week','Milling','Welding Base')
+        if tw >= 0:
+            self.data['prod_week'] = self._tbl(tw)
+        tm = self._find_tbl('Month','Milling','Welding Base')
+        if tm >= 0:
+            self.data['prod_month'] = self._tbl(tm)
+
+    # ── parse prove di laboratorio / meccaniche (tabelle 20-25) ───────────────
+
+    def _parse_mech(self):
+        # Tabella riassuntiva principale (con esito)
+        ti = self._find_tbl('Location','Pipe No.','Test Type','Result')
+        if ti >= 0:
+            self.data['mech'] = self._tbl(ti)
+        # Dettagli opzionali
+        tc = self._find_tbl('Test Type','Start Wt','End Wt','Temp')
+        if tc >= 0:
+            self.data['mech_corrosion'] = self._tbl(tc)
+        td = self._find_tbl('Specimen No.','Temperature','Shear Area')
+        if td >= 0:
+            self.data['mech_dwtt'] = self._tbl(td)
+        tt = self._find_tbl('Pipe No.','Sample No.','Min Req')
+        if tt >= 0:
+            self.data['mech_tensile'] = self._tbl(tt)
+
+    # ── parse MDR / certificati piastre (tabella 29) ──────────────────────────
+
+    def _parse_mdr(self):
+        ti = self._find_tbl('COMPLETION PERCENTAGE','MISSING CERTIFICATES')
+        if ti < 0: return
+        rows = self._tbl(ti)
+        d = self.data
+        if len(rows) > 1 and len(rows[1]) >= 2:
+            d['mdr_pct']     = rows[1][0]
+            d['mdr_missing'] = rows[1][1]
+        # Dettaglio stato certificati (riga header interna "Plate / Certificate Status")
+        detail = []
+        start = -1
+        for i, r in enumerate(rows):
+            if r and 'Certificate Status' in r[0]:
+                start = i; break
+        if start >= 0:
+            for r in rows[start+1:]:
+                if len(r) >= 3 and r[0]:
+                    detail.append({'status': r[0], 'qty': r[1] if len(r)>1 else '',
+                                   'pct': r[2] if len(r)>2 else '',
+                                   'op': r[3] if len(r)>3 else ''})
+        d['mdr_detail'] = detail
+
+    # ── parse NOI prossima visita (tabella 27) ────────────────────────────────
+
+    def _parse_noi(self):
+        ti = self._find_tbl('NOI','Activity','Date','Location')
+        if ti < 0: return
+        rows = self._tbl(ti)
+        out = []
+        for r in rows[1:]:
+            if len(r) >= 4 and r[1]:
+                out.append({'noi': r[0], 'activity': r[1],
+                            'date': r[3] if len(r)>3 else '',
+                            'time': r[4] if len(r)>4 else '',
+                            'loc':  r[5] if len(r)>5 else '',
+                            'status': r[6] if len(r)>6 else ''})
+        self.data['noi'] = out
+
+    # ── parse documenti ITP usati (tabella 4) ─────────────────────────────────
+
+    def _parse_docs(self):
+        ti = self._find_tbl('Document No.','Title - Description','Rev.','Status')
+        if ti < 0: return
+        rows = self._tbl(ti)
+        out = []
+        for r in rows[1:]:
+            if not r or not r[0]:
+                continue
+            if len(r) == 1:   # riga-titolo di categoria
+                out.append({'section': r[0]})
+            elif len(r) >= 4:
+                out.append({'num': r[0], 'title': r[1], 'rev': r[2], 'status': r[3]})
+        self.data['docs'] = out
+
     # ── entry point ───────────────────────────────────────────────────────────
 
     def _parse(self):
@@ -478,6 +632,13 @@ class DocxParser:
         self._parse_activities()
         self._parse_tally()
         self._parse_plates()
+        self._parse_forecast()
+        self._parse_po_comparison()
+        self._parse_production()
+        self._parse_mech()
+        self._parse_mdr()
+        self._parse_noi()
+        self._parse_docs()
         self._parse_hse()
         self._parse_photos()
         self._parse_aob()
@@ -591,16 +752,19 @@ def build_html(d):
             html += f'<div class="pr2">{esc(c["role"])}</div>{email_part}</div></div>\n'
         return html
 
-    # Activities table
+    # Activities table (Date | FR | ITP Pos. | Description | Pipe Nos | Result)
     acts_html = ''
     for a in d.get('activities', []):
-        acts_html += f'''<div class="arow">
-  <span class="adate">{esc(a["date"])}</span>
-  <span class="aitp">Pos. {esc(a["itp"])}</span>
-  <span class="sdot"></span>
-  <span class="adesc">{esc(a["desc"])}</span>
-  <span class="anote">{esc(a["notes"])}</span>
-</div>\n'''
+        res = a.get('result', '')
+        ok  = 'pg' if res.lower().startswith(('satisf','✔','pass','ok')) else 'pgr'
+        acts_html += f'''<tr>
+  <td class="mono">{esc(a["date"])}</td>
+  <td class="mono">{esc(a.get("fr",""))}</td>
+  <td><strong>{esc(a["itp"])}</strong></td>
+  <td>{esc(a["desc"])}</td>
+  <td style="font-size:11px">{esc(a.get("pipes",""))}</td>
+  <td style="font-size:11px">{esc(res)}</td>
+</tr>\n'''
 
     # Tally table
     tally_rows = ''
@@ -780,6 +944,128 @@ def build_html(d):
   <span class="clabel">{esc(e["title"])}</span>
   <span class="pill pgr">{esc(e["type"])}</span>
 </div>\n'''
+
+    # Completion forecast (tabella 15)
+    def fc_pill(s):
+        s = (s or '').upper()
+        if 'PROGRESS' in s: return '<span class="pill pa">In progress</span>'
+        if 'COMPLET' in s or 'DONE' in s: return '<span class="pill pg">Completed</span>'
+        if 'DELAY' in s or 'LATE' in s: return '<span class="pill pr">Delayed</span>'
+        return f'<span class="pill pgr">{esc(s.title())}</span>'
+    forecast_rows = ''
+    for f in d.get('forecast', []):
+        forecast_rows += f'''<tr>
+  <td class="mono">{esc(f["phase"])}</td>
+  <td>{esc(f["actual"])}</td><td>{esc(f["target"])}</td><td>{esc(f["remaining"])}</td>
+  <td>{esc(f["rate"])}</td><td>{esc(f["prod7"])}</td>
+  <td><strong>{esc(f["est"])}</strong></td><td>{esc(f["po_date"])}</td>
+  <td>{fc_pill(f["status"])}</td>
+</tr>\n'''
+
+    # Confronto data PO (tabella 17)
+    po_cmp_rows = ''
+    for label, val in d.get('po_comparison', []):
+        u = (label+val).upper()
+        cls = 'pr' if ('DELAY' in u or '+' in val) else 'pg' if ('AHEAD' in u or 'ON TRACK' in u) else 'pgr'
+        is_status = 'STATUS' in label.upper() or 'DEVIATION' in label.upper()
+        valhtml = f'<span class="pill {cls}">{esc(val)}</span>' if is_status else f'<strong>{esc(val)}</strong>'
+        po_cmp_rows += f'<div class="crow"><span class="clabel">{esc(label)}</span>{valhtml}</div>\n'
+
+    # Produzione per periodo (tabelle 11/12)
+    def prod_table_rows(rows, ncols=9):
+        out = ''
+        for r in rows[1:]:
+            cells = (r + ['']*ncols)[:ncols]
+            tds = ''.join(f'<td>{esc(c)}</td>' for c in cells)
+            out += f'<tr>{tds}</tr>\n'
+        return out
+    prod_week_rows  = prod_table_rows(d.get('prod_week', []))
+    prod_month_rows = prod_table_rows(d.get('prod_month', []))
+
+    # Prove di laboratorio / meccaniche (tabella 20)
+    def test_pill(s):
+        s = str(s)
+        if 'PASS' in s.upper() or '✔' in s: return f'<span class="pill pg">{esc(s)}</span>'
+        if 'FAIL' in s.upper() or '✘' in s: return f'<span class="pill pr">{esc(s)}</span>'
+        if 'PEND' in s.upper(): return f'<span class="pill pa">{esc(s)}</span>'
+        return f'<span class="pill pgr">{esc(s)}</span>'
+    mech = d.get('mech', [])
+    mech_rows = ''
+    for r in mech[1:]:
+        c = (r + ['']*9)[:9]
+        mech_rows += f'''<tr>
+  <td class="mono">{esc(c[0])}</td><td>{esc(c[1])}</td><td class="mono">{esc(c[2])}</td>
+  <td class="mono">{esc(c[3])}</td><td class="mono">{esc(c[4])}</td><td class="mono">{esc(c[5])}</td>
+  <td class="mono">{esc(c[6])}</td><td>{esc(c[7])}</td><td>{test_pill(c[8])}</td>
+</tr>\n'''
+    mech_pass = sum(1 for r in mech[1:] if 'PASS' in ' '.join(r).upper() or '✔' in ' '.join(r))
+    mech_total = max(len(mech)-1, 0)
+
+    # Generica: header + righe da una tabella grezza
+    def raw_table(rows):
+        if not rows: return '', ''
+        th = ''.join(f'<th>{esc(c)}</th>' for c in rows[0])
+        ncol = len(rows[0])
+        body = ''
+        for r in rows[1:]:
+            c = (r + ['']*ncol)[:ncol]
+            body += '<tr>' + ''.join(f'<td>{esc(x)}</td>' for x in c) + '</tr>\n'
+        return th, body
+    corr_th, corr_body   = raw_table(d.get('mech_corrosion', []))
+    dwtt_th, dwtt_body   = raw_table(d.get('mech_dwtt', []))
+    tens_th, tens_body   = raw_table(d.get('mech_tensile', []))
+
+    # MDR / certificati (tabella 29)
+    mdr_pct     = d.get('mdr_pct', '—')
+    mdr_missing = d.get('mdr_missing', '—')
+    mdr_rows = ''
+    for m in d.get('mdr_detail', []):
+        mdr_rows += f'''<tr>
+  <td>{esc(m["status"])}</td><td>{esc(m["qty"])}</td>
+  <td><strong>{esc(m["pct"])}</strong></td><td>{esc(m["op"])}</td>
+</tr>\n'''
+
+    # NOI prossima visita (tabella 27)
+    noi_rows = ''
+    for x in d.get('noi', []):
+        noi_rows += f'''<tr>
+  <td class="mono">{esc(x["noi"])}</td><td>{esc(x["activity"])}</td>
+  <td class="mono">{esc(x["date"])}</td><td>{esc(x["time"])}</td>
+  <td style="font-size:11px">{esc(x["loc"])}</td>
+  <td>{status_pill(x["status"])}</td>
+</tr>\n'''
+
+    # Documenti ITP usati (tabella 4)
+    docs_rows = ''
+    for e in d.get('docs', []):
+        if 'section' in e:
+            docs_rows += f'<tr class="rh"><td colspan="4">{esc(e["section"])}</td></tr>\n'
+        else:
+            docs_rows += f'''<tr>
+  <td class="mono">{esc(e["num"])}</td><td>{esc(e["title"])}</td>
+  <td>{esc(e["rev"])}</td><td>{status_pill(e["status"])}</td>
+</tr>\n'''
+
+    # Inspected pipes per PO (tabella 9)
+    inspected_length = d.get('inspected_length', '—')
+    inspected_rows = ''
+    for r in d.get('inspected_po', []):
+        inspected_rows += f'<tr><td class="mono">{esc(r["po"])}</td><td>{esc(r["nos"])}</td><td>{esc(r["length"])}</td></tr>\n'
+    if d.get('inspected_total'):
+        inspected_rows += f'<tr class="rh"><td>Total</td><td><strong>{esc(d.get("inspected_total","—"))}</strong></td><td>{esc(inspected_length)}</td></tr>\n'
+
+    # VAGB plates KPI table (tabella 28)
+    vagb_kpi_rows = ''
+    for k, v in d.get('vagb_kpi', {}).items():
+        vagb_kpi_rows += f'''<tr>
+  <td>{esc(k)}</td><td><strong>{esc(v.get("value",""))}</strong></td>
+  <td>{esc(v.get("target",""))}</td><td>{esc(v.get("delta",""))}</td>
+</tr>\n'''
+
+    # Valori sintetici per KPI/overview dal forecast e confronto PO
+    fc_est = d['forecast'][-1]['est'] if d.get('forecast') else '—'   # Final Inspection
+    po_dev = next((v for l,v in d.get('po_comparison',[]) if 'DEVIATION' in l.upper()), '—')
+    po_status = next((v for l,v in d.get('po_comparison',[]) if l.upper().strip()=='STATUS'), '')
 
     # ── CSS (identico al template pulito) ────────────────────────────────────
     css = """
@@ -965,12 +1251,13 @@ tbody tr:hover td{background:var(--bg2)}
   <nav class="sb-nav">
     <div class="sb-sec">Report</div>
     <button class="sb-btn active" onclick="nav('overview',this)"><i class="ti ti-layout-dashboard"></i>Overview</button>
-    <button class="sb-btn" onclick="nav('phases',this)"><i class="ti ti-chart-bar"></i>Production phases</button>
+    <button class="sb-btn" onclick="nav('production',this)"><i class="ti ti-chart-bar"></i>Production &amp; forecast</button>
     <button class="sb-btn" onclick="nav('dispatch',this)"><i class="ti ti-truck"></i>Dispatch</button>
     <button class="sb-btn" onclick="nav('activities',this)"><i class="ti ti-calendar-event"></i>Weekly activities</button>
+    <button class="sb-btn" onclick="nav('labtests',this)"><i class="ti ti-flask"></i>Lab &amp; tests</button>
     <div class="sb-sec">Supplier</div>
-    <button class="sb-btn" onclick="nav('plates',this)"><i class="ti ti-layers"></i>VAGB plates</button>
-    <button class="sb-btn" onclick="nav('irns',this)"><i class="ti ti-file-description"></i>IRN / NCR</button>
+    <button class="sb-btn" onclick="nav('plates',this)"><i class="ti ti-layers"></i>Plates &amp; MDR</button>
+    <button class="sb-btn" onclick="nav('nextvisit',this)"><i class="ti ti-calendar-due"></i>Next visit</button>
     <div class="sb-sec">Admin</div>
     <button class="sb-btn" onclick="nav('docs',this)"><i class="ti ti-folder"></i>ITP documents</button>
     <button class="sb-btn" onclick="nav('photos',this)"><i class="ti ti-photo"></i>Photos</button>
@@ -998,59 +1285,55 @@ tbody tr:hover td{background:var(--bg2)}
 <!-- OVERVIEW -->
 <div id="overview" class="section active">
   <div class="kpi-grid">
-    <div class="kpi kw"><div class="kl">Line pipe progress</div><div class="kv">{item400_pct}</div><div class="ks">Item 00400 — ongoing</div></div>
-    <div class="kpi kb"><div class="kl">VAGB plates</div><div class="kv">{vagb_pct}</div><div class="ks">{vagb_nos} / {vagb_ordered} pcs</div></div>
+    <div class="kpi kb"><div class="kl">VAGB plates at EEW</div><div class="kv">{vagb_pct}</div><div class="ks">{vagb_nos} / {vagb_ordered} pcs</div></div>
+    <div class="kpi kg"><div class="kl">MDR certificates</div><div class="kv">{mdr_pct}</div><div class="ks">{mdr_missing} missing</div></div>
     <div class="kpi kg"><div class="kl">Pipes released</div><div class="kv">{pipes_released}</div><div class="ks">3 purchase orders</div></div>
     <div class="kpi kg"><div class="kl">Ready for dispatch</div><div class="kv">{pipes_ready}</div><div class="ks">awaiting shipment</div></div>
   </div>
   <div class="kpi-grid">
     <div class="kpi kb"><div class="kl">Dispatched</div><div class="kv">{pipes_dispatched}</div><div class="ks">to final destination</div></div>
-    <div class="kpi kg"><div class="kl">Stacked Antwerp</div><div class="kv">{antwerp_total}</div><div class="ks">pipes NOS</div></div>
     <div class="kpi kg"><div class="kl">Pipes inspected</div><div class="kv">{pipes_inspected}</div><div class="ks">total</div></div>
-    <div class="kpi kw"><div class="kl">IRNs issued</div><div class="kv">76</div><div class="ks">PL-00001 open</div></div>
+    <div class="kpi kw"><div class="kl">Est. completion</div><div class="kv">{fc_est}</div><div class="ks">Item 00400 — Final Insp.</div></div>
+    <div class="kpi kr"><div class="kl">Deviation vs PO</div><div class="kv">{po_dev}</div><div class="ks">{esc(po_status)}</div></div>
   </div>
-  <div class="alert aw"><strong>No production activity W{wn-1}&rarr;W{wn}.</strong> Delta = 0 on all ITP phases. Only activity: incoming plate inspection ITP pos.&nbsp;6.</div>
   {alerts_html}
   <div class="two">
     <div class="card">
-      <div class="ct"><i class="ti ti-file-invoice"></i>Purchase order status</div>
-      <table><thead><tr><th>PO</th><th>Key item</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td class="mono">1506050</td><td>Item 8 — Offshore LC1</td><td><span class="pill pa">{item400_pct} ongoing</span></td></tr>
-        <tr><td class="mono">1519921</td><td>4 items</td><td><span class="pill pg">Completed</span></td></tr>
-        <tr><td class="mono">1541227</td><td>4 items</td><td><span class="pill pg">Completed</span></td></tr>
-      </tbody></table>
+      <div class="ct"><i class="ti ti-target"></i>Comparison with PO completion date</div>
+      {po_cmp_rows}
     </div>
     <div class="card">
-      <div class="ct"><i class="ti ti-category"></i>Material distribution</div>
-      <table><thead><tr><th>Type</th><th>Qty</th><th>%</th></tr></thead>
-      <tbody>{mat_rows}</tbody></table>
+      <div class="ct"><i class="ti ti-truck-delivery"></i>Dispatch summary — as of {slash_end}</div>
+      <div class="tw"><table><thead><tr><th>Saipem PO</th><th>Released</th><th>Length (m)</th><th>Dispatched</th><th>Ready</th></tr></thead>
+      <tbody>{dispatch_po_rows}</tbody></table></div>
     </div>
-  </div>
-  <div class="card">
-    <div class="ct"><i class="ti ti-list"></i>Item summary — PO 1506050</div>
-    <table><thead><tr><th>Item</th><th>Pipes</th><th>Completion</th><th>Status</th></tr></thead>
-    <tbody>{items_rows}</tbody></table>
   </div>
 </div>
 
-<!-- PRODUCTION PHASES -->
-<div id="phases" class="section">
+<!-- PRODUCTION & FORECAST -->
+<div id="production" class="section">
   <div class="card">
-    <div class="ct"><i class="ti ti-chart-bar"></i>ITP phase completion — all items</div>
-    <div id="phase-bars"></div>
+    <div class="ct"><i class="ti ti-target-arrow"></i>Completion forecast by phase — Item 00400</div>
+    <div class="tw"><table><thead><tr>
+      <th>Phase</th><th>Actual</th><th>Target</th><th>Remaining</th><th>Rate (pcs/d)</th>
+      <th>Produced (7d)</th><th>Est. completion</th><th>PO date</th><th>Status</th>
+    </tr></thead><tbody>{forecast_rows}</tbody></table></div>
   </div>
   <div class="card">
-    <div class="ct"><i class="ti ti-table"></i>Phase snapshot</div>
-    <div class="tw"><table><thead><tr><th>Phase</th><th>Completed</th><th>Remaining</th><th>Total</th><th>%</th></tr></thead>
-    <tbody>{phases_snap}</tbody></table></div>
-  </div>
-  <div class="card">
-    <div class="ct"><i class="ti ti-calendar"></i>Production by year</div>
+    <div class="ct"><i class="ti ti-calendar-stats"></i>Production by year</div>
     <div class="tw"><table><thead><tr><th>Year</th><th>Milling</th><th>Weld. Base</th><th>Weld. Clad</th><th>Hydro</th><th>UT</th><th>RT</th><th>PT</th><th>Final Insp.</th></tr></thead>
     <tbody>{yearly_rows}</tbody></table></div>
   </div>
-  <div class="alert aw">Week-on-week W{wn-1}&rarr;W{wn}: delta = 0 on all phases. Raw data not provided by Vendor.</div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-calendar-month"></i>Production by month</div>
+    <div class="tw"><table><thead><tr><th>Month</th><th>Milling</th><th>Weld. Base</th><th>Weld. Clad</th><th>Hydro</th><th>UT</th><th>RT</th><th>PT</th><th>Final Insp.</th></tr></thead>
+    <tbody>{prod_month_rows}</tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-calendar-week"></i>Production by week</div>
+    <div class="tw" style="max-height:360px;overflow-y:auto"><table><thead><tr><th>Week</th><th>Milling</th><th>Weld. Base</th><th>Weld. Clad</th><th>Hydro</th><th>UT</th><th>RT</th><th>PT</th><th>Final Insp.</th></tr></thead>
+    <tbody>{prod_week_rows}</tbody></table></div>
+  </div>
 </div>
 
 <!-- DISPATCH -->
@@ -1059,22 +1342,17 @@ tbody tr:hover td{background:var(--bg2)}
     <div class="kpi kg"><div class="kl">Total released</div><div class="kv">{pipes_released}</div><div class="ks">3 POs</div></div>
     <div class="kpi kb"><div class="kl">Dispatched</div><div class="kv">{pipes_dispatched}</div><div class="ks">to destination</div></div>
     <div class="kpi kw"><div class="kl">Ready for dispatch</div><div class="kv">{pipes_ready}</div><div class="ks">awaiting</div></div>
-    <div class="kpi kg"><div class="kl">Stacked Antwerp</div><div class="kv">{antwerp_total}</div><div class="ks">pipes NOS</div></div>
+    <div class="kpi kg"><div class="kl">Pipes inspected</div><div class="kv">{pipes_inspected}</div><div class="ks">{inspected_length} m</div></div>
   </div>
   <div class="card">
     <div class="ct"><i class="ti ti-truck"></i>Summary by PO — as of {slash_end}</div>
-    <table><thead><tr><th>Saipem PO</th><th>Released</th><th>Length (mm)</th><th>Dispatched</th><th>Ready</th></tr></thead>
-    <tbody>{dispatch_po_rows}</tbody></table>
+    <div class="tw"><table><thead><tr><th>Saipem PO</th><th>Released</th><th>Length (m)</th><th>Dispatched</th><th>Ready</th></tr></thead>
+    <tbody>{dispatch_po_rows}</tbody></table></div>
   </div>
   <div class="card">
-    <div class="ct"><i class="ti ti-package"></i>By category — PO 1506050</div>
-    <div class="tw"><table><thead><tr><th>Category</th><th>Released</th><th>Length (mm)</th><th>Dispatched</th><th>Ready</th></tr></thead>
-    <tbody>{dispatch_cat_rows}</tbody></table></div>
-  </div>
-  <div class="card">
-    <div class="ct"><i class="ti ti-building"></i>Stacked at Antwerp — as of {slash_end}</div>
-    <div class="tw"><table><thead><tr><th>SOW</th><th>NOS</th><th>Length (mm)</th></tr></thead>
-    <tbody>{antwerp_rows}</tbody></table></div>
+    <div class="ct"><i class="ti ti-checkup-list"></i>Inspected pipes by PO</div>
+    <div class="tw"><table><thead><tr><th>Saipem PO</th><th>Inspected (Nos)</th><th>Length (m)</th></tr></thead>
+    <tbody>{inspected_rows}</tbody></table></div>
   </div>
 </div>
 
@@ -1083,7 +1361,9 @@ tbody tr:hover td{background:var(--bg2)}
   <div class="card">
     <div class="ct"><i class="ti ti-calendar-event"></i>Activities — {range_en}</div>
     <div style="font-size:11px;color:var(--text3);margin-bottom:12px">ITP: 5129_20-4600015016-00054 Rev.06 AFC</div>
-    {acts_html}
+    <div class="tw"><table><thead><tr>
+      <th>Date</th><th>FR No.</th><th>ITP Pos.</th><th>Activity description</th><th>Pipe Nos / Sample</th><th>Result / Remarks</th>
+    </tr></thead><tbody>{acts_html}</tbody></table></div>
   </div>
   {f'''<div class="card">
     <div class="ct"><i class="ti ti-clipboard-list"></i>Tally Lists — Weekly Summary</div>
@@ -1094,70 +1374,68 @@ tbody tr:hover td{background:var(--bg2)}
   </div>''' if tally_rows else ''}
 </div>
 
-<!-- VAGB PLATES -->
+<!-- LAB & TESTS -->
+<div id="labtests" class="section">
+  <div class="kpi-grid">
+    <div class="kpi kg"><div class="kl">Tests this week</div><div class="kv">{mech_total}</div><div class="ks">lab &amp; mechanical</div></div>
+    <div class="kpi kg"><div class="kl">Passed</div><div class="kv">{mech_pass}</div><div class="ks">within criteria</div></div>
+  </div>
+  <div class="card">
+    <div class="ct"><i class="ti ti-flask"></i>Lab &amp; mechanical tests — {range_en}</div>
+    <div class="tw"><table><thead><tr>
+      <th>Date</th><th>Location</th><th>Pipe No.</th><th>Plate No.</th><th>CS Heat</th><th>CRA Heat</th><th>Sample</th><th>Test type</th><th>Result</th>
+    </tr></thead><tbody>{mech_rows}</tbody></table></div>
+  </div>
+  {f'''<div class="card">
+    <div class="ct"><i class="ti ti-droplet"></i>Corrosion test detail (ASTM G48 / G28)</div>
+    <div class="tw"><table><thead><tr>{corr_th}</tr></thead><tbody>{corr_body}</tbody></table></div>
+  </div>''' if corr_body else ''}
+  {f'''<div class="card">
+    <div class="ct"><i class="ti ti-temperature"></i>DWTT / shear area</div>
+    <div class="tw"><table><thead><tr>{dwtt_th}</tr></thead><tbody>{dwtt_body}</tbody></table></div>
+  </div>''' if dwtt_body else ''}
+  {f'''<div class="card">
+    <div class="ct"><i class="ti ti-ruler-2"></i>Tensile / hardness</div>
+    <div class="tw"><table><thead><tr>{tens_th}</tr></thead><tbody>{tens_body}</tbody></table></div>
+  </div>''' if tens_body else ''}
+</div>
+
+<!-- PLATES & MDR -->
 <div id="plates" class="section">
   <div class="kpi-grid">
     <div class="kpi kb"><div class="kl">Plates at EEW</div><div class="kv">{vagb_nos}</div><div class="ks">of {vagb_ordered} ordered</div></div>
     <div class="kpi kg"><div class="kl">Delivery rate</div><div class="kv">{vagb_pct}</div><div class="ks">delta {vagb_delta}</div></div>
-    <div class="kpi kr"><div class="kl">Plates pending</div><div class="kv">—</div><div class="ks">to complete PO</div></div>
-    <div class="kpi kw"><div class="kl">Est. delay</div><div class="kv">~2 wks</div><div class="ks">vs schedule</div></div>
+    <div class="kpi kg"><div class="kl">MDR completion</div><div class="kv">{mdr_pct}</div><div class="ks">signed certificates</div></div>
+    <div class="kpi kr"><div class="kl">Missing certificates</div><div class="kv">{mdr_missing}</div><div class="ks">to complete MDR</div></div>
   </div>
   <div class="card">
-    <div class="ct"><i class="ti ti-calendar"></i>Delivery schedule</div>
-    <table><thead><tr><th>CW</th><th>Planned</th><th>Schedule</th><th>Received</th></tr></thead>
-    <tbody>{vagb_sched}</tbody></table>
+    <div class="ct"><i class="ti ti-layers"></i>VAGB plates — KPI</div>
+    <table><thead><tr><th>KPI / Indicator</th><th>Current</th><th>Target</th><th>Delta</th></tr></thead>
+    <tbody>{vagb_kpi_rows}</tbody></table>
   </div>
   <div class="card">
-    <div class="ct"><i class="ti ti-table"></i>Material delivery summary — as of {dot_end}</div>
-    <div class="tw"><table><thead><tr><th>Item</th><th>Total</th><th>Delivered</th><th>Pending</th><th>Ordered</th><th>Del %</th><th>First arrival</th><th>Last arrival</th></tr></thead>
-    <tbody>{vagb_rows}</tbody></table></div>
+    <div class="ct"><i class="ti ti-certificate"></i>MDR — certificate status</div>
+    <div class="tw"><table><thead><tr><th>Plate / certificate status</th><th>Qty (plates)</th><th>%</th><th>Operational status</th></tr></thead>
+    <tbody>{mdr_rows}</tbody></table></div>
   </div>
 </div>
 
-<!-- IRN / NCR -->
-<div id="irns" class="section">
-  <div class="two">
-    <div class="card">
-      <div class="ct"><i class="ti ti-x"></i>NCR — all closed</div>
-      <div class="crow"><span class="clabel"><span class="mono">NCR-0001</span> CTOD failure EEW Item 601</span><span class="pill pg">Closed</span></div>
-      <div class="crow"><span class="clabel"><span class="mono">NCR-0002</span> CTOD failure EEW Item 301</span><span class="pill pg">Closed</span></div>
-      <div class="crow"><span class="clabel"><span class="mono">NCR-0003</span> Slag inclusions EEW Item 701</span><span class="pill pg">Closed</span></div>
-      <div class="crow"><span class="clabel"><span class="mono">NCR-0004</span> Mechanical damage</span><span class="pill pg">Closed</span></div>
-      <div class="crow"><span class="clabel"><span class="mono">NCR-0005</span> Corrosion test ASTM G28-02</span><span class="pill pg">Closed</span></div>
-      <div class="crow"><span class="clabel"><span class="mono">NCR-0010</span> Burn-through MPQT Item 300</span><span class="pill pg">Closed</span></div>
-      <div class="crow"><span class="clabel"><span class="mono">NCR-0011</span> Corrosion test ASTM G48-02</span><span class="pill pg">Closed</span></div>
-      <div class="crow"><span class="clabel"><span class="mono">NCR-0012</span> CTOD failure MPQT Item 300</span><span class="pill pg">Closed</span></div>
-    </div>
-    <div class="card">
-      <div class="ct"><i class="ti ti-alert-circle"></i>Open items</div>
-      <div class="crow"><span class="clabel"><span class="mono">COMP3-1506050-PL-00001</span><br><small style="color:var(--text3)">Issued with IRN-00002</small></span><span class="pill pr">OPEN</span></div>
-    </div>
-  </div>
+<!-- NEXT VISIT -->
+<div id="nextvisit" class="section">
   <div class="card">
-    <div class="ct"><i class="ti ti-file-description"></i>IRN register — PO 1506050</div>
-    <div class="irn-list">
-      <div class="irn-row"><span class="irn-id">IRN-00001 to 00027</span><span class="irn-desc">CoC D01–D23 · May–Dec 2025</span><span class="pill pg">Issued</span></div>
-      <div class="irn-row"><span class="irn-id">IRN-00028 to 00059</span><span class="irn-desc">CoC E01–E10 · Jan–Mar 2026</span><span class="pill pg">Issued</span></div>
-      <div class="irn-row"><span class="irn-id">IRN-00060 to 00075</span><span class="irn-desc">CoC E11–C01 · Mar–Apr 2026</span><span class="pill pg">Issued</span></div>
-      <div class="irn-row"><span class="irn-id">IRN-00076</span><span class="irn-desc">CoC D26 · 131 pipes Item 00400</span><span class="pill pg">Issued</span></div>
-    </div>
-    <div style="font-size:10px;color:var(--text3);margin-top:8px">76 IRNs issued · PO 1519921: 2 IRNs · PL-00001: OPEN</div>
+    <div class="ct"><i class="ti ti-calendar-due"></i>Planned inspections — next visit</div>
+    <div class="tw"><table><thead><tr>
+      <th>NOI N°</th><th>Activity</th><th>Date</th><th>Time</th><th>Location</th><th>Status</th>
+    </tr></thead><tbody>{noi_rows}</tbody></table></div>
   </div>
 </div>
 
 <!-- ITP DOCUMENTS -->
 <div id="docs" class="section">
   <div class="card">
-    <div class="ct"><i class="ti ti-folder"></i>Key documents — status summary</div>
-    <table><thead><tr><th>Doc. No.</th><th>Title</th><th>Rev.</th><th>Status</th></tr></thead>
-    <tbody>
-      <tr><td class="mono">-00054</td><td>ITP for Production</td><td>06</td><td><span class="pill pg">AFC</span></td></tr>
-      <tr><td class="mono">-00058/60/61/65/97</td><td>WPS 45650 1A / 1C / 2A / 3B / 2B</td><td>var.</td><td><span class="pill pg">AFC</span></td></tr>
-      <tr><td class="mono">-00031 to 00042</td><td>HST / VT / AUT / RT / MT / PT / Pickling / Marking / Handling / Forming</td><td>var.</td><td><span class="pill pg">AFC</span></td></tr>
-      <tr><td class="mono">-00005/06/07</td><td>Dimensional control / UT Procedure Alloy 625 &amp; 825</td><td>C</td><td><span class="pill pb">IFA</span></td></tr>
-      <tr><td class="mono">-00019/23/25/59</td><td>Records Book / Calibration / PMI / WPS 1B</td><td>var.</td><td><span class="pill pa">IFR</span></td></tr>
-      <tr><td class="mono">-00044/22</td><td>MPQT Report / Quality Manual</td><td>—</td><td><span class="pill pr">Not sent</span></td></tr>
-    </tbody></table>
+    <div class="ct"><i class="ti ti-folder"></i>Used documents for inspection — {len(d.get("docs", []))} entries</div>
+    <div class="tw" style="max-height:560px;overflow-y:auto"><table><thead><tr><th>Doc. No.</th><th>Title — description</th><th>Rev.</th><th>Status</th></tr></thead>
+    <tbody>{docs_rows}</tbody></table></div>
   </div>
 </div>
 
@@ -1217,9 +1495,9 @@ tbody tr:hover td{background:var(--bg2)}
 </div>
 
 <script>
-const TITLES={{overview:'Overview',phases:'Production phases',dispatch:'Dispatch',
-  activities:'Weekly activities',plates:'VAGB plates',irns:'IRN / NCR',
-  docs:'ITP documents',photos:'Photos',hse:'HSE / AOB',contacts:'Contacts'}};
+const TITLES={{overview:'Overview',production:'Production & forecast',dispatch:'Dispatch',
+  activities:'Weekly activities',labtests:'Lab & tests',plates:'Plates & MDR',
+  nextvisit:'Next visit',docs:'ITP documents',photos:'Photos',hse:'HSE / AOB',contacts:'Contacts'}};
 
 function nav(id,btn){{
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
