@@ -278,7 +278,9 @@ class DocxParser:
         ti = self._find_tbl('KPI','Current Value','Target','Delta')
         if ti >= 0:
             rows = self._tbl(ti)
-            kpis = {r[0]: {'value': r[1], 'target': r[2], 'delta': r[3]}
+            kpis = {r[0]: {'value': r[1] if len(r)>1 else '',
+                           'target': r[2] if len(r)>2 else '',
+                           'delta': r[3] if len(r)>3 else ''}
                     for r in rows[1:] if r[0]}
             self.data['vagb_kpi'] = kpis
             # Estrai valori chiave
