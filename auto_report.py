@@ -1015,7 +1015,8 @@ def build_html(d):
     dwtt_th, dwtt_body   = raw_table(d.get('mech_dwtt', []))
     tens_th, tens_body   = raw_table(d.get('mech_tensile', []))
 
-    # MDR / certificati (tabella 29)
+    # MDR / certificati (tabella 29) — presente solo in alcune settimane
+    has_mdr = bool(d.get('mdr_pct'))
     mdr_pct     = d.get('mdr_pct', '—')
     mdr_missing = d.get('mdr_missing', '—')
     mdr_rows = ''
@@ -1024,6 +1025,18 @@ def build_html(d):
   <td>{esc(m["status"])}</td><td>{esc(m["qty"])}</td>
   <td><strong>{esc(m["pct"])}</strong></td><td>{esc(m["op"])}</td>
 </tr>\n'''
+    # Frammenti condizionali MDR
+    mdr_kpi_cards = (f'''<div class="kpi kg"><div class="kl">MDR completion</div><div class="kv">{mdr_pct}</div><div class="ks">signed certificates</div></div>
+    <div class="kpi kr"><div class="kl">Missing certificates</div><div class="kv">{mdr_missing}</div><div class="ks">to complete MDR</div></div>''' if has_mdr else '')
+    mdr_card = (f'''<div class="card">
+    <div class="ct"><i class="ti ti-certificate"></i>MDR — certificate status</div>
+    <div class="tw"><table><thead><tr><th>Plate / certificate status</th><th>Qty (plates)</th><th>%</th><th>Operational status</th></tr></thead>
+    <tbody>{mdr_rows}</tbody></table></div>
+  </div>''' if has_mdr else '')
+    # Card MDR per Overview (fallback a VAGB delta se assente)
+    overview_mdr_card = (f'<div class="kpi kg"><div class="kl">MDR certificates</div><div class="kv">{mdr_pct}</div><div class="ks">{mdr_missing} missing</div></div>'
+                         if has_mdr else
+                         f'<div class="kpi kb"><div class="kl">VAGB delta</div><div class="kv">{vagb_delta}</div><div class="ks">vs 100% ordered</div></div>')
 
     # NOI prossima visita (tabella 27)
     noi_rows = ''
@@ -1286,7 +1299,7 @@ tbody tr:hover td{background:var(--bg2)}
 <div id="overview" class="section active">
   <div class="kpi-grid">
     <div class="kpi kb"><div class="kl">VAGB plates at EEW</div><div class="kv">{vagb_pct}</div><div class="ks">{vagb_nos} / {vagb_ordered} pcs</div></div>
-    <div class="kpi kg"><div class="kl">MDR certificates</div><div class="kv">{mdr_pct}</div><div class="ks">{mdr_missing} missing</div></div>
+    {overview_mdr_card}
     <div class="kpi kg"><div class="kl">Pipes released</div><div class="kv">{pipes_released}</div><div class="ks">3 purchase orders</div></div>
     <div class="kpi kg"><div class="kl">Ready for dispatch</div><div class="kv">{pipes_ready}</div><div class="ks">awaiting shipment</div></div>
   </div>
@@ -1405,19 +1418,14 @@ tbody tr:hover td{background:var(--bg2)}
   <div class="kpi-grid">
     <div class="kpi kb"><div class="kl">Plates at EEW</div><div class="kv">{vagb_nos}</div><div class="ks">of {vagb_ordered} ordered</div></div>
     <div class="kpi kg"><div class="kl">Delivery rate</div><div class="kv">{vagb_pct}</div><div class="ks">delta {vagb_delta}</div></div>
-    <div class="kpi kg"><div class="kl">MDR completion</div><div class="kv">{mdr_pct}</div><div class="ks">signed certificates</div></div>
-    <div class="kpi kr"><div class="kl">Missing certificates</div><div class="kv">{mdr_missing}</div><div class="ks">to complete MDR</div></div>
+    {mdr_kpi_cards}
   </div>
   <div class="card">
     <div class="ct"><i class="ti ti-layers"></i>VAGB plates — KPI</div>
     <table><thead><tr><th>KPI / Indicator</th><th>Current</th><th>Target</th><th>Delta</th></tr></thead>
     <tbody>{vagb_kpi_rows}</tbody></table>
   </div>
-  <div class="card">
-    <div class="ct"><i class="ti ti-certificate"></i>MDR — certificate status</div>
-    <div class="tw"><table><thead><tr><th>Plate / certificate status</th><th>Qty (plates)</th><th>%</th><th>Operational status</th></tr></thead>
-    <tbody>{mdr_rows}</tbody></table></div>
-  </div>
+  {mdr_card}
 </div>
 
 <!-- NEXT VISIT -->
