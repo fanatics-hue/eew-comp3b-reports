@@ -162,8 +162,40 @@ tbody tr:hover td{background:var(--bg2)}
   .section:first-of-type{page-break-before:auto}
 }
 </style>
+<style>
+/* LOGIN GATE */
+#login-screen{position:fixed;inset:0;z-index:9999;background:var(--bg3);display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:40px 36px 32px;width:360px;max-width:100%;position:relative;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.14)}
+.login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+.login-title{font-size:15px;font-weight:500;color:var(--text);text-align:center;margin-bottom:3px}
+.login-sub{font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;text-align:center;margin-bottom:26px}
+.login-label{font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:block}
+.login-input{width:100%;padding:9px 12px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:13px;font-family:var(--font);outline:none;transition:border-color .15s;box-sizing:border-box;letter-spacing:1px}
+.login-input:focus{border-color:var(--accent2)}
+.login-btn{width:100%;margin-top:16px;padding:10px;background:linear-gradient(90deg,var(--accent2),var(--accent));border:none;border-radius:var(--r);font-family:var(--font);font-size:13px;font-weight:500;color:#fff;cursor:pointer;transition:opacity .15s}
+.login-btn:hover{opacity:.88}
+.login-error{color:var(--danger);font-size:11px;text-align:center;margin-top:10px;min-height:14px}
+.login-footer{font-size:10px;color:var(--text3);text-align:center;margin-top:20px;opacity:.7}
+.admin-visible{display:none}
+body.admin-mode .admin-visible{display:inline-flex}
+.admin-badge{background:var(--pu-bg);color:var(--pu-t);border:none;font-family:var(--font)}
+</style>
 </head>
 <body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-title">NFPS COMP3B &mdash; Weekly Report</div>
+    <div class="login-sub">IQS S.r.l. &middot; Restricted Access</div>
+    <label class="login-label">Password</label>
+    <input class="login-input" id="login-pwd" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password">
+    <button class="login-btn" onclick="doLogin()">Access Report</button>
+    <div class="login-error" id="login-err"></div>
+    <div class="login-footer">IQS Confidential &middot; Order 45650</div>
+  </div>
+</div>
+
+
 
 <div class="sb-backdrop" id="sb-backdrop"></div>
 <aside class="sidebar" id="sidebar">
@@ -1825,5 +1857,55 @@ document.addEventListener('DOMContentLoaded',function(){
   });
 });
 </script>
+
+<script>
+const PWD_HASH       = ["2bc8ca85c10c52d3ee9ffc26f9aa1943","6ec9575d96b507d2380f33566d502b6d"].join("");
+const PWD_HASH_ADMIN = ["0fa5c082b9b61ac3d99b7ef45664422a","fd5ea8116808d07768f1284a7d06dadc"].join("");
+const SESSION_KEY  = "comp3b_auth";
+const SESSION_ROLE = "comp3b_role";
+
+async function sha256(m){
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(m));
+  return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2,"0")).join("");
+}
+
+async function doLogin(){
+  const p = document.getElementById("login-pwd").value;
+  const h = await sha256(p);
+  if (h === PWD_HASH_ADMIN) {
+    sessionStorage.setItem(SESSION_KEY, "1");
+    sessionStorage.setItem(SESSION_ROLE, "admin");
+    document.getElementById("login-screen").style.display = "none";
+    applyRole("admin");
+  } else if (h === PWD_HASH) {
+    sessionStorage.setItem(SESSION_KEY, "1");
+    sessionStorage.setItem(SESSION_ROLE, "user");
+    document.getElementById("login-screen").style.display = "none";
+    applyRole("user");
+  } else {
+    const e = document.getElementById("login-err");
+    e.textContent = "Password errata \u2014 riprova";
+    document.getElementById("login-pwd").value = "";
+    setTimeout(() => e.textContent = "", 3000);
+  }
+}
+
+function applyRole(role){
+  if (role === "admin") document.body.classList.add("admin-mode");
+  else document.body.classList.remove("admin-mode");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const i = document.getElementById("login-pwd");
+  if (i) i.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+  const stored = sessionStorage.getItem(SESSION_KEY);
+  const role   = sessionStorage.getItem(SESSION_ROLE) || "user";
+  if (stored === "1") {
+    document.getElementById("login-screen").style.display = "none";
+    applyRole(role);
+  }
+});
+</script>
+
 </body>
 </html>
